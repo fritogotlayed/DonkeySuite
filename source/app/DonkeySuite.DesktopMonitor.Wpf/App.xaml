@@ -1,0 +1,12 @@
+﻿<Application x:Class="DonkeySuite.DesktopMonitor.Wpf.App" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" 
+             StartupUri="MainWindow.xaml"
+             d1p1:Ignorable="d"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:d1p1="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:viewModel="clr-namespace:DonkeySuite.DesktopMonitor.Wpf.ViewModel">
+  <Application.Resources>
+    <!--<vm:ViewModelLocator x:Key="Locator" d:IsDataSource="True" xmlns:vm="clr-namespace:DonkeySuite.DesktopMonitor.Wpf.ViewModel" />-->
+    <viewModel:ViewModelLocator x:Key="Locator" d:IsDataSource="True" />
+  </Application.Resources>
+</Application>
