@@ -4,11 +4,11 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{F284CAB2-54E4-4918-B691-FB5923103225}</ProjectGuid>
+    <ProjectGuid>{FEE03E44-C0C9-4C73-9B45-6FC34B8B5E00}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>DonkeySuite.DesktopMonitor.Domain</RootNamespace>
-    <AssemblyName>DonkeySuite.DesktopMonitor.Domain</AssemblyName>
+    <RootNamespace>DonkeySuite.Tests.DesktopMonitor.Domain</RootNamespace>
+    <AssemblyName>DonkeySuite.Tests.DesktopMonitor.Domain</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -30,20 +30,20 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Iesi.Collections, Version=4.0.0.0, Culture=neutral, PublicKeyToken=aa95f207798dfdb4, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Iesi.Collections.4.0.0.4000\lib\net40\Iesi.Collections.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="log4net, Version=1.2.13.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\log4net.2.0.3\lib\net40-full\log4net.dll</HintPath>
+      <HintPath>..\..\..\packages\log4net.2.0.3\lib\net40-full\log4net.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="NHibernate, Version=4.0.0.4000, Culture=neutral, PublicKeyToken=aa95f207798dfdb4, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\NHibernate.4.0.3.4000\lib\net40\NHibernate.dll</HintPath>
+    <Reference Include="Moq, Version=4.2.1502.911, Culture=neutral, PublicKeyToken=69f491c39445e920, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\Moq.4.2.1502.0911\lib\net40\Moq.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Ninject, Version=3.2.0.0, Culture=neutral, PublicKeyToken=c7192dc5380945e7, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Ninject.3.2.2.0\lib\net45-full\Ninject.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\packages\Ninject.3.2.2.0\lib\net45-full\Ninject.dll</HintPath>
+    </Reference>
+    <Reference Include="nunit.framework, Version=2.6.4.14350, Culture=neutral, PublicKeyToken=96d09a1eb7f44a77, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\NUnit.2.6.4\lib\nunit.framework.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />
@@ -55,32 +55,43 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="DependencyManager.cs" />
-    <Compile Include="Model\Requests\AddImageRequest.cs" />
-    <Compile Include="Model\Requests\BaseRequest.cs" />
-    <Compile Include="Model\Requests\WebRequestFactory.cs" />
-    <Compile Include="Model\Wrappers\EnvironmentWrapper.cs" />
-    <Compile Include="Model\Wrappers\FileWrapper.cs" />
-    <Compile Include="Model\Wrappers\IEnvironmentWrapper.cs" />
-    <Compile Include="Model\Wrappers\IFileWrapper.cs" />
-    <Compile Include="Model\Settings\ImageServer.cs" />
-    <Compile Include="Model\Settings\OperationMode.cs" />
-    <Compile Include="Model\Settings\SettingsRoot.cs" />
-    <Compile Include="Model\Settings\SettingsManager.cs" />
-    <Compile Include="Model\Settings\WatchDirectories.cs" />
-    <Compile Include="Model\Settings\WatchDirectory.cs" />
-    <Compile Include="Model\Wrappers\ISemaphoreWrapper.cs" />
-    <Compile Include="Model\Wrappers\ISerializer.cs" />
-    <Compile Include="Model\Wrappers\SemaphoreWrapper.cs" />
-    <Compile Include="Model\Wrappers\XmlSerializerWrapper.cs" />
-    <Compile Include="Model\SortStrategies\ISortStrategy.cs" />
-    <Compile Include="Model\SortStrategies\SimpleSortStrategy.cs" />
-    <Compile Include="Model\WatchedDirectory.cs" />
-    <Compile Include="Model\WatchedFile.cs" />
+    <Compile Include="Model\Requests\WebRequestFactoryTests.cs" />
+    <Compile Include="Model\SortStrategies\SimpleSortStrategyTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TestBase.cs" />
+    <Compile Include="Utilities.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Model\WatchedDirectoryTest.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\DonkeySuite.DesktopMonitor.Domain\DonkeySuite.DesktopMonitor.Domain.csproj">
+      <Project>{F284CAB2-54E4-4918-B691-FB5923103225}</Project>
+      <Name>DonkeySuite.DesktopMonitor.Domain</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Model\Settings\WatchDirectoryTest.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Model\Settings\WatchDirectoriesTest.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Model\Settings\SettingsRootTest.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Model\Settings\ImageServerTest.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Model\Requests\AddImageRequestTest.cs" />
+    <Compile Include="Model\Requests\BaseRequestTest.cs" />
+    <Compile Include="Model\Settings\SettingsManagerTest.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Model\WatchedFileTest.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

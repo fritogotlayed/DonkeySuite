@@ -1,4 +1,6 @@
+using DonkeySuite.DesktopMonitor.Domain;
 using DonkeySuite.DesktopMonitor.Domain.Model.Requests;
+using DonkeySuite.DesktopMonitor.Domain.Model.Settings;
 using GalaSoft.MvvmLight;
 using GalaSoft.MvvmLight.Command;
 using Ninject;
@@ -39,6 +41,10 @@ namespace DonkeySuite.DesktopMonitor.Wpf.ViewModel
 
         public void TestRequestCommandHandler()
         {
+
+            var mgr = DependencyManager.Kernel.Get<SettingsManager>();
+            var settings = mgr.GetSettings();
+
             var req = DependencyManager.Kernel.Get<AddImageRequest>();
             req.FileName = "Test.txt";
             req.FileBytes = new byte[] {2, 3, 4, 5, 6, 7, 7};

@@ -29,7 +29,6 @@ namespace DonkeySuite.DesktopMonitor.Domain.Model.Requests
 
         public byte[] FileBytes { get; set; }
 
-
         protected override void PopulateRequestParameters(Dictionary<string, string> parameters)
         {
             parameters.Add("fileName", FileName);

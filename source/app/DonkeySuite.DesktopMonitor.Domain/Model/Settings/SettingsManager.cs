@@ -2,136 +2,142 @@
 using System.IO;
 using System.Runtime.Serialization;
 using System.Threading;
-using System.Xml.Serialization;
+using DonkeySuite.DesktopMonitor.Domain.Model.Wrappers;
 using log4net;
 using Ninject;
+using Ninject.Parameters;
 
 namespace DonkeySuite.DesktopMonitor.Domain.Model.Settings
 {
     public class SettingsManager
     {
-        public static SettingsManager Instance = new SettingsManager();
+        private readonly ILog _log;
+        private const string FileName = "settings.xml";
+        private readonly ISemaphoreWrapper _available;
+        private SettingsRoot _settingsRoot;
 
-        private static readonly ILog Log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
-        private static string _fileName = "settings.xml";
-        private Semaphore available = new Semaphore(0, 1);
-        private Settings settings;
-
-        private SettingsManager()
+        public SettingsManager(ILog log, ISemaphoreWrapper semaphore)
         {
-            // Hide the constructor from others. This doesn't protect against reflection.
+            _log = log;
+            _available = semaphore;
         }
 
-        public Settings GetSettings()
+        // NOTE: Not sure I want to do this everywhere. Just a thing to try for now.
+        private IKernel Kernel
+        {
+            get { return DependencyManager.Kernel; }
+        }
+
+        public SettingsRoot GetSettings()
         {
             try
             {
-                available.WaitOne();
+                _available.WaitOne();
             }
             catch (AbandonedMutexException e)
             {
-                Log.Warn("Failed to acquire semaphore lock when loading settings.", e);
+                _log.Warn("Failed to acquire semaphore lock when loading settings.", e);
                 return null;
             }
 
             try
             {
                 // If the settings have already been populated then return them
-                if (settings != null)
+                if (_settingsRoot != null)
                 {
-                    available.Release();
-                    return settings;
+                    _available.Release();
+                    return _settingsRoot;
                 }
 
-                var serializer = DependencyManager.Kernel.Get<XmlSerializer>();
+                var serializer = Kernel.Get<ISerializer>("SettingsSerializer");
 
                 var path = GetSettingsFilePath();
-                if (!File.Exists(path))
+                if (!Kernel.Get<IFileWrapper>().Exists(path))
                 {
-                    Log.Warn(string.Format("Settings file \"%s\" does not exist. Populating with defaults.", path));
-                    settings = DependencyManager.Kernel.Get<Settings>("settings");
-                    settings.PopulateWithDefaults();
+                    _log.Warn(string.Format("Settings file \"{0}\" does not exist. Populating with defaults.", path));
+                    _settingsRoot = DependencyManager.Kernel.Get<SettingsRoot>();
+                    _settingsRoot.PopulateWithDefaults();
 
                     try
                     {
-                        using (var writer = new StreamWriter(path))
+                        using (var writer = Kernel.Get<TextWriter>(new ConstructorArgument("path", path)))
                         {
-                            serializer.Serialize(writer, settings);
+                            serializer.Serialize(writer, _settingsRoot);
                         }
                     }
                     catch (SerializationException e)
                     {
-                        Log.Warn("Could not save default settings.", e);
+                        _log.Warn("Could not save default settings.", e);
                     }
                 }
                 else
                 {
-                    Log.Info(string.Format("Settings file \"%s\" used.", path));
+                    _log.Info(string.Format("Settings file \"{0}\" used.", path));
 
                     try
                     {
-                        using (var fileStream = new FileStream(path, FileMode.Open))
+                        using (var fileStream = Kernel.Get<IFileWrapper>().Open(path, FileMode.Open))
                         {
-                            settings = (Settings) serializer.Deserialize(fileStream);
+                            _settingsRoot = (SettingsRoot) serializer.Deserialize(fileStream);
                         }
                     }
                     catch (SerializationException e)
                     {
-                        Log.Error("Error opening settings file.", e);
+                        _log.Error("Error opening settings file.", e);
                     }
                 }
 
-                available.Release();
+                _available.Release();
 
             }
             catch (Exception)
             {
-                available.Release();
+                _available.Release();
                 throw;
             }
 
-            return settings;
+            return _settingsRoot;
         }
 
         public void SaveSettings()
         {
             try
             {
-                available.WaitOne();
+                _available.WaitOne();
 
                 var path = GetSettingsFilePath();
-                var serializer = DependencyManager.Kernel.Get<XmlSerializer>();
-                using (var writer = new StreamWriter(path))
+                var serializer = DependencyManager.Kernel.Get<ISerializer>();
+                using (var writer = Kernel.Get<TextWriter>(new ConstructorArgument("path", path)))
                 {
-                    serializer.Serialize(writer, settings);
+                    serializer.Serialize(writer, _settingsRoot);
                 }
             }
             catch (ThreadInterruptedException e)
             {
-                Log.Warn("Failed to acquire semaphore lock when saving settings.", e);
+                _log.Warn("Failed to acquire semaphore lock when saving settings.", e);
             }
             catch (SerializationException e)
             {
-                available.Release();
+                _available.Release();
                 throw new IOException("Could not save settings.", e);
             }
             catch (Exception e)
             {
-                Log.Error("Error saving settings.", e);
-                available.Release();
+                _log.Error("Error saving settings.", e);
+                _available.Release();
                 throw;
             }
-            available.Release();
+            _available.Release();
         }
 
         private string GetSettingsFilePath()
         {
-            var sep = Path.PathSeparator.ToString();
+            var sep = Path.DirectorySeparatorChar.ToString();
             var userHome = (Environment.OSVersion.Platform == PlatformID.Unix ||
                             Environment.OSVersion.Platform == PlatformID.MacOSX)
                 ? Environment.GetEnvironmentVariable("HOME")
                 : Environment.ExpandEnvironmentVariables("%HOMEDRIVE%%HOMEPATH%");
-            var fileFullPath = string.Join(sep, userHome, ".mdsoftware", "dirWatcher", _fileName);
+            var fileFullPath = string.Join(sep, userHome, ".mdsoftware", "dirWatcher", FileName);
 
             return fileFullPath;
         }

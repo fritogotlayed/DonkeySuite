@@ -1,7 +1,10 @@
-﻿namespace DonkeySuite.DesktopMonitor.Domain.Model.Settings
+﻿using System.Xml.Serialization;
+
+namespace DonkeySuite.DesktopMonitor.Domain.Model.Settings
 {
     public class ImageServer
     {
+        [XmlAttribute("serverUrl")]
         public string ServerUrl { get; set; }
 
         public void PopulateWithDefaults() {

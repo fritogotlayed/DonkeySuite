@@ -3,6 +3,7 @@ using System.IO;
 using DonkeySuite.DesktopMonitor.Domain.Model.Requests;
 using DonkeySuite.DesktopMonitor.Domain.Model.Settings;
 using DonkeySuite.DesktopMonitor.Domain.Model.SortStrategies;
+using DonkeySuite.DesktopMonitor.Domain.Model.Wrappers;
 using log4net;
 using Ninject;
 
@@ -11,11 +12,13 @@ namespace DonkeySuite.DesktopMonitor.Domain.Model
     public class WatchedFile
     {
         private ISortStrategy _sortStrategy;
-        private readonly ILog _log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private readonly Lazy<ILog> _log = new Lazy<ILog>(() => DependencyManager.Kernel.Get<ILog>());
 
         public string FullPath { get; set; }
         public string FileName { get; set; }
         public bool UploadSuccessful { get; set; }
+
+        public ILog Log { get { return _log.Value; } }
 
         public ISortStrategy SortStrategy
         {
@@ -25,25 +28,26 @@ namespace DonkeySuite.DesktopMonitor.Domain.Model
 
         public byte[] LoadImageBytes()
         {
-            if (_log.IsInfoEnabled)
+            if (Log.IsInfoEnabled)
             {
-                _log.Info(string.Format("Beginning loadImage: \"{0}\"", FullPath));
+                Log.InfoFormat("Beginning LoadImage: \"{0}\"", FullPath);
             }
             else
             {
-                _log.Debug("Beginning loadImage method.");
+                Log.Debug("Beginning LoadImage method.");
             }
 
             // TODO: This needs to be abstracted away similar to the XML stuff with settings
-            var data = File.ReadAllBytes(FullPath);
+            var file = DependencyManager.Kernel.Get<IFileWrapper>();
+            var data = file.ReadAllBytes(FullPath);
 
-            if (_log.IsInfoEnabled)
+            if (Log.IsInfoEnabled)
             {
-                _log.Info(string.Format("Returning loadImage: \"{0}\"", FullPath));
+                Log.InfoFormat("Returning LoadImage: \"{0}\"", FullPath);
             }
             else
             {
-                _log.Debug("Returning loadImage result.");
+                Log.Debug("Returning LoadImage result.");
             }
 
             return data;
@@ -51,10 +55,11 @@ namespace DonkeySuite.DesktopMonitor.Domain.Model
 
         public void SendToServer()
         {
-            _log.Info("Transmitting image: " + FullPath);
+            Log.InfoFormat("Transmitting image: {0}", FullPath);
 
             var req = DependencyManager.Kernel.Get<AddImageRequest>();
-            req.RequestUrl = SettingsManager.Instance.GetSettings().ImageServer.ServerUrl;
+            var settings = DependencyManager.Kernel.Get<SettingsManager>().GetSettings();
+            req.RequestUrl = settings.ImageServer.ServerUrl;
             req.FileName = FileName;
             req.FileBytes = LoadImageBytes();
 
@@ -79,14 +84,14 @@ namespace DonkeySuite.DesktopMonitor.Domain.Model
 
             if (File.Exists(newPath))
             {
-                _log.Info(string.Format("Renaming file. From: {0} To: {1}", oldPath, newPath));
+                Log.Info(string.Format("Renaming file. From: {0} To: {1}", oldPath, newPath));
                 lastDirSeparator = newPath.LastIndexOf(Path.DirectorySeparatorChar);
                 Directory.CreateDirectory(newPath.Substring(0, lastDirSeparator));
                 File.Move(oldPath, newPath);
             }
             else
             {
-                _log.Info(string.Format("Moving file failed due to existing file in destination. File name: {0}", FileName));
+                Log.Info(string.Format("Moving file failed due to existing file in destination. File name: {0}", FileName));
             }
         }
     }
