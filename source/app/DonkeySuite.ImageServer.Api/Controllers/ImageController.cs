@@ -26,7 +26,7 @@ namespace DonkeySuite.ImageServer.Api.Controllers
         {
             return new HttpResponseMessage(HttpStatusCode.OK)
             {
-                Content = new StringContent("Blah message.")
+                Content = new StringContent(string.Format("{0} received.", request.FileName))
             };
         }
 

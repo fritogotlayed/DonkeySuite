@@ -25,9 +25,9 @@ namespace DonkeySuite.DesktopMonitor.Domain.Model.Requests
             }
         }
 
-        public string FileName { get; set; }
+        public virtual string FileName { get; set; }
 
-        public byte[] FileBytes { get; set; }
+        public virtual byte[] FileBytes { get; set; }
 
         protected override void PopulateRequestParameters(Dictionary<string, string> parameters)
         {

@@ -14,57 +14,65 @@ namespace DonkeySuite.DesktopMonitor.Domain.Model.Requests
         public virtual string ResponseStatus { get; protected set; }
         public virtual string ResponseData { get; protected set; }
 
-        public bool Post()
+        public virtual bool Post()
         {
-            // Create a request using a URL that can receive a post. 
-            var request = WebRequestFactory.CreateWebRequest(RequestUrl);
-            request.Method = "POST";
-            request.ContentType = @"application/x-www-form-urlencoded";
-
-            var parameters = new Dictionary<string, string>();
-            PopulateRequestParameters(parameters);
-
-            // Pack the parameters for form encoding.
-            var buffer = new StringBuilder();
-            var prefix = string.Empty;
-            foreach (var parameter in parameters)
+            try
             {
-                buffer.AppendFormat("{0}{1}={2}", prefix, parameter.Key, parameter.Value);
-                prefix = "&";
-            }
+                // Create a request using a URL that can receive a post. 
+                var request = WebRequestFactory.CreateWebRequest(RequestUrl);
+                request.Method = "POST";
+                request.ContentType = @"application/x-www-form-urlencoded";
 
-            // Encode the body for the request
-            var byteArray = Encoding.UTF8.GetBytes(buffer.ToString());
-            request.ContentLength = byteArray.Length;
+                var parameters = new Dictionary<string, string>();
+                PopulateRequestParameters(parameters);
 
-            // Get the request stream and write the data to the request stream.
-            using (var dataStream = request.GetRequestStream())
-            {
-                dataStream.Write(byteArray, 0, byteArray.Length);
-            }
-
-            // Get the response and update the status
-            Log.InfoFormat("Performing post to \"{0}\".", RequestUrl);
-            var response = (HttpWebResponse) request.GetResponse();
-            ResponseStatus = response.StatusDescription;
-            Log.InfoFormat("Received response with code [{0}].", response.StatusCode);
-
-            // Pull the response data out and place it into the corresponding property.
-            using (var responseStream = response.GetResponseStream())
-            {
-                if (responseStream != null)
+                // Pack the parameters for form encoding.
+                var buffer = new StringBuilder();
+                var prefix = string.Empty;
+                foreach (var parameter in parameters)
                 {
-                    Log.InfoFormat("Reading response data for last request.");
-                    var reader = new StreamReader(responseStream);
-                    ResponseData = reader.ReadToEnd();
+                    buffer.AppendFormat("{0}{1}={2}", prefix, parameter.Key, parameter.Value);
+                    prefix = "&";
                 }
-                else
-                {
-                    Log.InfoFormat("Response data is null for last request. Bypassing parsing.");
-                }
-            }
 
-            return response.StatusCode == HttpStatusCode.OK;
+                // Encode the body for the request
+                var byteArray = Encoding.UTF8.GetBytes(buffer.ToString());
+                request.ContentLength = byteArray.Length;
+
+                // Get the request stream and write the data to the request stream.
+                using (var dataStream = request.GetRequestStream())
+                {
+                    dataStream.Write(byteArray, 0, byteArray.Length);
+                }
+
+                // Get the response and update the status
+                Log.InfoFormat("Performing post to \"{0}\".", RequestUrl);
+                var response = (HttpWebResponse) request.GetResponse();
+                ResponseStatus = response.StatusDescription;
+                Log.InfoFormat("Received response with code [{0}].", response.StatusCode);
+
+                // Pull the response data out and place it into the corresponding property.
+                using (var responseStream = response.GetResponseStream())
+                {
+                    if (responseStream != null)
+                    {
+                        Log.InfoFormat("Reading response data for last request.");
+                        var reader = new StreamReader(responseStream);
+                        ResponseData = reader.ReadToEnd();
+                    }
+                    else
+                    {
+                        Log.InfoFormat("Response data is null for last request. Bypassing parsing.");
+                    }
+                }
+
+                return response.StatusCode == HttpStatusCode.OK;
+            }
+            catch (WebException ex)
+            {
+                Log.Error("Failed posting to server.", ex);
+                return false;
+            }
         }
 
         protected abstract void PopulateRequestParameters(Dictionary<string, string> parameters);

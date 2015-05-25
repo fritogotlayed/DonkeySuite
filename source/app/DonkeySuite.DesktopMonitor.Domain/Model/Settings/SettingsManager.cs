@@ -18,6 +18,7 @@ namespace DonkeySuite.DesktopMonitor.Domain.Model.Settings
 
         public SettingsManager(ILog log, ISemaphoreWrapper semaphore)
         {
+            // TODO: Get rid of the constructor injection
             _log = log;
             _available = semaphore;
         }

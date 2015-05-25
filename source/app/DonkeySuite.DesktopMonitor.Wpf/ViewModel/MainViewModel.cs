@@ -41,7 +41,11 @@ namespace DonkeySuite.DesktopMonitor.Wpf.ViewModel
 
         public void TestRequestCommandHandler()
         {
+            MakeTestRequest();
+        }
 
+        private static void MakeTestRequest()
+        {
             var mgr = DependencyManager.Kernel.Get<SettingsManager>();
             var settings = mgr.GetSettings();
 

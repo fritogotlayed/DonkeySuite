@@ -1,4 +1,6 @@
+using System.IO;
 using DonkeySuite.DesktopMonitor.Domain.Model;
+using DonkeySuite.DesktopMonitor.Domain.Model.Requests;
 using DonkeySuite.DesktopMonitor.Domain.Model.SortStrategies;
 using DonkeySuite.DesktopMonitor.Domain.Model.Wrappers;
 using log4net;
@@ -85,95 +87,85 @@ namespace DonkeySuite.Tests.DesktopMonitor.Domain.Model
             mockLog.Verify(x => x.Debug("Beginning LoadImage method."), Times.Once);
             mockLog.Verify(x => x.Debug("Returning LoadImage result."), Times.Once);
         }
+
+        [Test]
+        public void WatchedFileSendToServerTransmitsFileAndSetsUploadSuccessfulProperly()
+        {
+            // Arrange
+            const string filePath = "/foo/bar/testFile.txt";
+            var mockLog = new Mock<ILog>();
+            var mockFileWrapper = new Mock<IFileWrapper>();
+            var mockSemaphoreWrapper = new Mock<ISemaphoreWrapper>();
+            var mockSerializer = new Mock<ISerializer>();
+            var mockEnvironmentWrapper = new Mock<IEnvironmentWrapper>();
+            var mockStreamWriter = new Mock<TextWriter>();
+            var mockAddImageRequest = new Mock<AddImageRequest>();
+
+            TestKernel.Bind<ILog>().ToMethod(context => mockLog.Object);
+            TestKernel.Bind<IFileWrapper>().ToMethod(context => mockFileWrapper.Object);
+            TestKernel.Bind<ISemaphoreWrapper>().ToMethod(context => mockSemaphoreWrapper.Object);
+            TestKernel.Bind<ISerializer>().ToMethod(context => mockSerializer.Object).Named("SettingsSerializer");
+            TestKernel.Bind<IEnvironmentWrapper>().ToMethod(context => mockEnvironmentWrapper.Object);
+            TestKernel.Bind<TextWriter>().ToMethod(context => mockStreamWriter.Object);
+            TestKernel.Bind<AddImageRequest>().ToMethod(context => mockAddImageRequest.Object);
+
+
+            mockAddImageRequest.Setup(x => x.Post()).Returns(true);
+            mockLog.SetupGet(x => x.IsInfoEnabled).Returns(false);
+            mockFileWrapper.Setup(x => x.ReadAllBytes(filePath)).Returns(new byte[] {1, 4, 3});
+
+            // Act
+            var file = new WatchedFile {FileName = "testFile.txt", FullPath = filePath};
+            file.SendToServer();
+
+            // Assert
+            Assert.AreEqual(true, file.UploadSuccessful);
+            mockAddImageRequest.VerifySet(x => x.RequestUrl = "http://localhost:8080/DonkeyImageServer");
+            mockAddImageRequest.VerifySet(x => x.FileName = "testFile.txt");
+            mockLog.Verify(x => x.InfoFormat("Transmitting image: {0}", "/foo/bar/testFile.txt"), Times.Once);
+        }
+
+        [Test]
+        public void WatchedFileIsInBaseDirectoryReturnsTrueWhenFileIsInBaseDirectory()
+        {
+            // Arrange
+            const string fullPath = "C:\\foo.txt";
+            const string baseDirectory = "C:\\";
+            const string fileName = "foo.txt";
+
+            var f = new WatchedFile();
+            f.FileName = fileName;
+            f.FullPath = fullPath;
+
+            // Act
+            var rslt = f.IsInBaseDirectory(baseDirectory);
+
+            // Assert
+            Assert.AreEqual(true, rslt);
+        }
+
+        [Test]
+        public void WatchedFileIsInBaseDirectoryReturnsFalseWhenFileIsInBaseDirectory()
+        {
+            // Arrange
+            const string fullPath = "C:\\bar\\foo.txt";
+            const string baseDirectory = "C:\\";
+            const string fileName = "foo.txt";
+
+            var f = new WatchedFile();
+            f.FileName = fileName;
+            f.FullPath = fullPath;
+
+            // Act
+            var rslt = f.IsInBaseDirectory(baseDirectory);
+
+            // Assert
+            Assert.AreEqual(false, rslt);
+        }
     }
 }
 /*
 public class WatchedFileTest {
-    @Test
-    public final void watchedFileSendToServerTransmitsFileAndSetsUploadSuccessfulProperly() throws Exception {
-        // Arrange
-        Log logMock = mock(Log.class);
-        File testFile = createTestFile();
-        AddImageRequest addImageRequest = mock(AddImageRequest.class);
-        Settings settings = new Settings();
-        ImageServer imageServer = new ImageServer();
-        imageServer.setServerUrl("http://testUrl.org/");
-        settings.setImageServer(imageServer);
-
-        java.lang.reflect.Field prop = SettingsManager.class.getDeclaredField("settings");
-        prop.setAccessible(true);
-        prop.set(SettingsManager.INSTANCE, settings);
-        MockBeanProvider.enqueueMockLogger(logMock);
-        MockBeanProvider.enqueueAddImageRequest(addImageRequest);
-
-        when(addImageRequest.post()).thenReturn(true);
-
-        // Act
-        WatchedFile f = new WatchedFile();
-        f.setFileName(testFileName);
-        f.setFullPath(testFile.getPath());
-        f.sendToServer();
-
-        // Assert
-        assertEquals(true, f.isUploadSuccessful());
-        verify(logMock).trace("Transmitting image: testFile.txt");
-        verify(addImageRequest).setRequestUrl("http://testUrl.org/");
-        verify(addImageRequest).setFileName("testFile.txt");
-        verify(addImageRequest).post();
-    }
-
-    @Test
-    public final void watchedFileIsInBaseDirectoryReturnsTrueWhenFileIsInBaseDirectory(){
-        // Arrange
-        String fullPath;
-        String baseDirectory;
-        String fileName = "foo.txt";
-
-        if(System.getProperty("os.name").contains("Windows")){
-            fullPath = "C:\\foo.txt";
-            baseDirectory = "C:\\";
-        } else {
-            fullPath = "/foo.txt";
-            baseDirectory = "/";
-        }
-
-        WatchedFile f = new WatchedFile();
-        f.setFileName(fileName);
-        f.setFullPath(fullPath);
-
-        // Act
-        boolean rslt = f.isInBaseDirectory(baseDirectory);
-
-        // Assert
-        assertEquals(true, rslt);
-    }
-
-    @Test
-    public final void watchedFileIsInBaseDirectoryReturnsFalseWhenFileIsNotInBaseDirectory(){
-        // Arrange
-        String fullPath;
-        String fileName = "foo.txt";
-        String baseDirectory;
-
-        if(System.getProperty("os.name").contains("Windows")){
-            fullPath = "C:\\f\\foo.txt";
-            baseDirectory = "C:\\";
-        } else {
-            fullPath = "/f/foo.txt";
-            baseDirectory = "/";
-        }
-
-        WatchedFile f = new WatchedFile();
-        f.setFileName(fileName);
-        f.setFullPath(fullPath);
-
-        // Act
-        boolean rslt = f.isInBaseDirectory(baseDirectory);
-
-        // Assert
-        assertEquals(false, rslt);
-    }
-
     @Test
     public final void watchedFileSortFileThrowsExceptionWhenNoDefaultSortStrategyDefined(){
         // Arrange

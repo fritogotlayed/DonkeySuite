@@ -5,7 +5,6 @@ using System.Linq;
 using DonkeySuite.DesktopMonitor.Domain.Model.Settings;
 using DonkeySuite.DesktopMonitor.Domain.Model.SortStrategies;
 using log4net;
-using NHibernate;
 using Ninject;
 
 namespace DonkeySuite.DesktopMonitor.Domain.Model
@@ -49,13 +48,13 @@ namespace DonkeySuite.DesktopMonitor.Domain.Model
 
             foreach (string ext in watchDir.FileExtensions.Split(','))
             {
-                _acceptableExtensions.Add(ext);
+                _acceptableExtensions.Add(string.Format(".{0}", ext));
             }
         }
 
-        public void ProcessAvailableImages(ISession session)
+        public void ProcessAvailableImages(IRepository<WatchedFile, string> watchedFileRepository)
         {
-            var images = GetAvailableImages(session);
+            var images = GetAvailableImages(watchedFileRepository);
 
             foreach (var image in images.Where(image => image != null))
             {
@@ -64,7 +63,7 @@ namespace DonkeySuite.DesktopMonitor.Domain.Model
                     if (!image.UploadSuccessful && (_mode.Equals(OperationMode.UploadAndClear) || _mode.Equals(OperationMode.UploadOnly) || _mode.Equals(OperationMode.UploadAndSort)))
                     {
                         image.SendToServer();
-                        session.Save(image);
+                        watchedFileRepository.Insert(image);
                     }
 
                     if (image.IsInBaseDirectory(_directory) && (_mode.Equals(OperationMode.SortOnly) || _mode.Equals(OperationMode.UploadAndSort)))
@@ -76,13 +75,13 @@ namespace DonkeySuite.DesktopMonitor.Domain.Model
                 catch (IOException ex)
                 {
                     image.UploadSuccessful = false;
-                    session.Save(image);
+                    watchedFileRepository.Insert(image);
                     Log.Error("Failed: " + image, ex);
                 }
             }
         }
 
-        private List<WatchedFile> GetAvailableImages(ISession session)
+        private List<WatchedFile> GetAvailableImages(IRepository<WatchedFile, string> watchedFileRepository)
         {
 
             if (Log.IsInfoEnabled)
@@ -96,7 +95,7 @@ namespace DonkeySuite.DesktopMonitor.Domain.Model
 
             _imageFiles = new List<WatchedFile>();
 
-            PopulateFilesForFolder(session, _imageFiles, _directory);
+            PopulateFilesForFolder(watchedFileRepository, _imageFiles, _directory);
 
             if (Log.IsInfoEnabled)
             {
@@ -111,24 +110,21 @@ namespace DonkeySuite.DesktopMonitor.Domain.Model
             return _imageFiles;
         }
 
-        private void PopulateFilesForFolder(ISession session, List<WatchedFile> fileList, String path)
+        private void PopulateFilesForFolder(IRepository<WatchedFile, string> watchedFileRepository, List<WatchedFile> fileList, String path)
         {
-            if (Log.IsInfoEnabled)
-            {
-                Log.Info(string.Format("populating files and subfiles in {0}", path));
-            }
+            Log.InfoFormat("populating files and subfiles in {0}", path);
 
             if (_includeSubDirectories)
             {
                 foreach (var directory in Directory.GetDirectories(path))
                 {
-                    PopulateFilesForFolder(session, fileList, directory);
+                    PopulateFilesForFolder(watchedFileRepository, fileList, directory);
                 }
             }
 
             foreach (var file in Directory.GetFiles(path).Where(f => _acceptableExtensions.Contains(Path.GetExtension(f))))
             {
-                var watchedFile = session.Get<WatchedFile>(file);
+                var watchedFile = watchedFileRepository.GetById(file);
 
                 // If we can't find the file then create it
                 if (watchedFile == null)
