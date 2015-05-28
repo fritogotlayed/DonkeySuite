@@ -14,19 +14,19 @@ namespace DonkeySuite.DesktopMonitor.Domain.Model
         private ISortStrategy _sortStrategy;
         private readonly Lazy<ILog> _log = new Lazy<ILog>(() => DependencyManager.Kernel.Get<ILog>());
 
-        public string FullPath { get; set; }
-        public string FileName { get; set; }
-        public bool UploadSuccessful { get; set; }
+        public virtual string FullPath { get; set; }
+        public virtual string FileName { get; set; }
+        public virtual bool UploadSuccessful { get; set; }
 
-        public ILog Log { get { return _log.Value; } }
+        public virtual ILog Log { get { return _log.Value; } }
 
-        public ISortStrategy SortStrategy
+        public virtual ISortStrategy SortStrategy
         {
             get { return _sortStrategy ?? (_sortStrategy = DependencyManager.Kernel.Get<ISortStrategy>("defaultSortStrategy")); }
             set { _sortStrategy = value; }
         }
 
-        public byte[] LoadImageBytes()
+        public virtual byte[] LoadImageBytes()
         {
             if (Log.IsInfoEnabled)
             {
@@ -53,7 +53,7 @@ namespace DonkeySuite.DesktopMonitor.Domain.Model
             return data;
         }
 
-        public void SendToServer()
+        public virtual void SendToServer()
         {
             Log.InfoFormat("Transmitting image: {0}", FullPath);
 
@@ -66,13 +66,13 @@ namespace DonkeySuite.DesktopMonitor.Domain.Model
             UploadSuccessful = req.Post();
         }
 
-        public bool IsInBaseDirectory(String directory)
+        public virtual bool IsInBaseDirectory(String directory)
         {
             var tmp = Path.Combine(directory, FileName);
             return tmp.Equals(FullPath);
         }
 
-        public void SortFile()
+        public virtual void SortFile()
         {
             if (SortStrategy == null) throw new InvalidOperationException("Sort strategy is not set.");
 

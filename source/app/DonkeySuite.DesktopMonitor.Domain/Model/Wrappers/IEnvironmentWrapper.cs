@@ -3,5 +3,6 @@
     public interface IEnvironmentWrapper
     {
         bool IsWindowsPlatform { get; }
+        string UserHomeDirectory { get; }
     }
 }

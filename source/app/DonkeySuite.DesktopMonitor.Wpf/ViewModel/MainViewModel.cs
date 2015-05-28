@@ -1,8 +1,13 @@
+using System;
+using System.Threading.Tasks;
 using DonkeySuite.DesktopMonitor.Domain;
+using DonkeySuite.DesktopMonitor.Domain.Model;
 using DonkeySuite.DesktopMonitor.Domain.Model.Requests;
 using DonkeySuite.DesktopMonitor.Domain.Model.Settings;
+using DonkeySuite.DesktopMonitor.Wpf.Repositories;
 using GalaSoft.MvvmLight;
 using GalaSoft.MvvmLight.Command;
+using log4net;
 using Ninject;
 
 namespace DonkeySuite.DesktopMonitor.Wpf.ViewModel
@@ -21,6 +26,8 @@ namespace DonkeySuite.DesktopMonitor.Wpf.ViewModel
     /// </summary>
     public class MainViewModel : ViewModelBase
     {
+        private static readonly ILog Log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+
         /// <summary>
         /// Initializes a new instance of the MainViewModel class.
         /// </summary>
@@ -41,19 +48,44 @@ namespace DonkeySuite.DesktopMonitor.Wpf.ViewModel
 
         public void TestRequestCommandHandler()
         {
-            MakeTestRequest();
+            Task.Factory.StartNew(ScanFolder);
         }
 
-        private static void MakeTestRequest()
+        private void ScanFolder()
         {
-            var mgr = DependencyManager.Kernel.Get<SettingsManager>();
-            var settings = mgr.GetSettings();
+            using (var session = NHibernateHelper.OpenSession())
+            using (var trans = session.BeginTransaction())
+                try
+                {
+                    // TODO: Figure out how to make this injected.
+                    var repo = new WatchedFileRepository(session);
+                    var mgr = DependencyManager.Kernel.Get<SettingsManager>();
+                    var settings = mgr.GetSettings();
+                    foreach (var watchDir in settings.Directories)
+                    {
+                        var dir = DependencyManager.Kernel.Get<WatchedDirectory>();
+                        dir.Configure(watchDir);
+                        dir.ProcessAvailableImages(repo);
+                    }
 
-            var req = DependencyManager.Kernel.Get<AddImageRequest>();
-            req.FileName = "Test.txt";
-            req.FileBytes = new byte[] {2, 3, 4, 5, 6, 7, 7};
-            req.RequestUrl = "http://localhost:61788";
-            req.Post();
+                    trans.Commit();
+                }
+                catch (Exception ex)
+                {
+                    if (trans != null && trans.IsActive)
+                    {
+                        trans.Rollback();
+                    }
+
+                    Log.Error("Failed to process images. ", ex);
+                }
+                finally
+                {
+                    if (session != null)
+                    {
+                        session.Close();
+                    }
+                }
         }
     }
 }

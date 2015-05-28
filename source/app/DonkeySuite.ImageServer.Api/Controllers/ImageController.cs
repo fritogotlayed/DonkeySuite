@@ -3,11 +3,14 @@ using System.Net;
 using System.Net.Http;
 using System.Web.Http;
 using DonkeySuite.ImageServer.Api.Models;
+using log4net;
 
 namespace DonkeySuite.ImageServer.Api.Controllers
 {
     public class ImageController : ApiController
     {
+        private static readonly ILog Log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+
         // GET image
         public IEnumerable<string> Get()
         {
@@ -24,6 +27,8 @@ namespace DonkeySuite.ImageServer.Api.Controllers
         // public void Post([FromBody] string value)
         public HttpResponseMessage Post(AddImageRequest request)
         {
+            Log.DebugFormat("Accepted request for file {0}.", request.FileName);
+
             return new HttpResponseMessage(HttpStatusCode.OK)
             {
                 Content = new StringContent(string.Format("{0} received.", request.FileName))

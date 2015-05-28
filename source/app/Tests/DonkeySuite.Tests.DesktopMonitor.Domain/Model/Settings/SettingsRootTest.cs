@@ -3,6 +3,7 @@ using DonkeySuite.DesktopMonitor.Domain;
 using DonkeySuite.DesktopMonitor.Domain.Model.Settings;
 using DonkeySuite.DesktopMonitor.Domain.Model.Wrappers;
 using Moq;
+using Ninject;
 using NUnit.Framework;
 
 namespace DonkeySuite.Tests.DesktopMonitor.Domain.Model.Settings
@@ -13,7 +14,7 @@ namespace DonkeySuite.Tests.DesktopMonitor.Domain.Model.Settings
         [SetUp]
         public void SetUp()
         {
-            DependencyManager.Kernel = null;
+            DependencyManager.Kernel = new StandardKernel();
         }
 
         [TearDown]

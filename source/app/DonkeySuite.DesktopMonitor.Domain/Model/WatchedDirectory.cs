@@ -83,36 +83,20 @@ namespace DonkeySuite.DesktopMonitor.Domain.Model
 
         private List<WatchedFile> GetAvailableImages(IRepository<WatchedFile, string> watchedFileRepository)
         {
-
-            if (Log.IsInfoEnabled)
-            {
-                Log.Info(string.Format("Beginning to list available images: {0}", _directory));
-            }
-            else
-            {
-                Log.Debug("Beginning to list available images.");
-            }
+            Log.DebugFormat("Beginning to list available images: {0}", _directory);
 
             _imageFiles = new List<WatchedFile>();
 
             PopulateFilesForFolder(watchedFileRepository, _imageFiles, _directory);
 
-            if (Log.IsInfoEnabled)
-            {
-                Log.Info(string.Format("Returning list of available images: {0} with count {1}", _directory,
-                    _imageFiles.Count));
-            }
-            else
-            {
-                Log.Debug("Returning list of available images.");
-            }
+            Log.DebugFormat("Returning list of available images: {0} with count {1}", _directory, _imageFiles.Count);
 
             return _imageFiles;
         }
 
         private void PopulateFilesForFolder(IRepository<WatchedFile, string> watchedFileRepository, List<WatchedFile> fileList, String path)
         {
-            Log.InfoFormat("populating files and subfiles in {0}", path);
+            Log.DebugFormat("populating files and subfiles in {0}", path);
 
             if (_includeSubDirectories)
             {
@@ -125,6 +109,7 @@ namespace DonkeySuite.DesktopMonitor.Domain.Model
             foreach (var file in Directory.GetFiles(path).Where(f => _acceptableExtensions.Contains(Path.GetExtension(f))))
             {
                 var watchedFile = watchedFileRepository.GetById(file);
+                Log.DebugFormat("Processing file {0}", file);
 
                 // If we can't find the file then create it
                 if (watchedFile == null)

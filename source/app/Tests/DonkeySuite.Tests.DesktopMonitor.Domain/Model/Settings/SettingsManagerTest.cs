@@ -210,9 +210,11 @@ namespace DonkeySuite.Tests.DesktopMonitor.Domain.Model.Settings
             var mockFileWrapper = new Mock<IFileWrapper>();
             var mockLogger = new Mock<ILog>();
             var mockSemaphore = new Mock<ISemaphoreWrapper>();
+            var mockEnvironmentWrapper = new Mock<IEnvironmentWrapper>();
 
             mockFileWrapper.Setup(x => x.Exists(It.IsAny<string>())).Returns(true);
 
+            TestKernel.Bind<IEnvironmentWrapper>().ToMethod(context => mockEnvironmentWrapper.Object);
             TestKernel.Bind<IFileWrapper>().ToMethod(context => mockFileWrapper.Object);
             TestKernel.Bind<ISerializer>().ToMethod(context => mockSerializer.Object).Named("SettingsSerializer");
             TestKernel.Bind<SettingsManager>().ToSelf().InTransientScope()
@@ -235,9 +237,11 @@ namespace DonkeySuite.Tests.DesktopMonitor.Domain.Model.Settings
             var mockStreamWriter = new Mock<TextWriter>();
             var mockLogger = new Mock<ILog>();
             var mockSemaphore = new Mock<ISemaphoreWrapper>();
+            var mockEnvironmentWrapper = new Mock<IEnvironmentWrapper>();
 
             mockSerializer.Setup(x => x.Serialize(mockStreamWriter.Object, It.IsAny<object>()));
 
+            TestKernel.Bind<IEnvironmentWrapper>().ToMethod(context => mockEnvironmentWrapper.Object);
             TestKernel.Bind<ISerializer>().ToMethod(context => mockSerializer.Object).Named("SettingsSerializer");
             TestKernel.Bind<TextWriter>().ToMethod(context => mockStreamWriter.Object);
             TestKernel.Bind<SettingsManager>().ToSelf().InTransientScope()
@@ -255,11 +259,13 @@ namespace DonkeySuite.Tests.DesktopMonitor.Domain.Model.Settings
             // Arrange
             var mockSerializer = new Mock<ISerializer>();
             var mockStreamWriter = new Mock<TextWriter>();
+            var mockEnvironmentWrapper = new Mock<IEnvironmentWrapper>();
             var mockLogger = new Mock<ILog>();
             var mockSemaphore = new Mock<ISemaphoreWrapper>();
 
             mockSerializer.Setup(x => x.Serialize(mockStreamWriter.Object, It.IsAny<object>())).Throws(new Exception("test exception"));
 
+            TestKernel.Bind<IEnvironmentWrapper>().ToMethod(context => mockEnvironmentWrapper.Object);
             TestKernel.Bind<ISerializer>().ToMethod(context => mockSerializer.Object).Named("SettingsSerializer");
             TestKernel.Bind<TextWriter>().ToMethod(context => mockStreamWriter.Object);
             TestKernel.Bind<SettingsManager>().ToSelf().InTransientScope()

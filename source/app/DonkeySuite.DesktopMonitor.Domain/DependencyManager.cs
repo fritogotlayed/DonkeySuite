@@ -1,6 +1,5 @@
 ﻿using System;
 using System.IO;
-using System.Threading;
 using System.Xml.Serialization;
 using DonkeySuite.DesktopMonitor.Domain.Model.Requests;
 using DonkeySuite.DesktopMonitor.Domain.Model.Settings;
@@ -56,6 +55,7 @@ namespace DonkeySuite.DesktopMonitor.Domain
             Log.Debug("Initializing kernel.");
 
             kernel.Bind<AddImageRequest>().ToSelf().InTransientScope();
+            kernel.Bind<IEnvironmentWrapper>().To<EnvironmentWrapper>().InTransientScope();
             kernel.Bind<IFileWrapper>().To<FileWrapper>().InTransientScope();
             kernel.Bind<ILog>().ToMethod(context => LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType));
             kernel.Bind<ISemaphoreWrapper>().To<SemaphoreWrapper>().InTransientScope()
