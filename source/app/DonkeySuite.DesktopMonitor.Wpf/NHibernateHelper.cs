@@ -23,8 +23,8 @@ namespace DonkeySuite.DesktopMonitor.Wpf
             {
                 if (_configuration != null) return _configuration;
 
-                var sep = Path.DirectorySeparatorChar.ToString();
                 var environmentWrapper = DependencyManager.Kernel.Get<IEnvironmentWrapper>();
+                var sep = environmentWrapper.DirectorySeparatorChar.ToString();
                 var userHome = environmentWrapper.UserHomeDirectory;
                 var fullFilePath = string.Join(sep, userHome, ".mdsoftware", "dirWatcher", "dirWatcher.db");
                 var connString = string.Format("Data Source={0};Version=3", fullFilePath);

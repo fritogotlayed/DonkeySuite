@@ -22,9 +22,6 @@ namespace DonkeySuite.ImageServer.Api.Filters
             });
 
         }
-
-        //Log Critical errors
-        Debug.WriteLine(context.Exception);
          */
             Log.Error("An error has occurred while processing a request.", context.Exception);
 

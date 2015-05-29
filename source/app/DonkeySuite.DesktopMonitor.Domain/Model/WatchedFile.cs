@@ -12,13 +12,13 @@ namespace DonkeySuite.DesktopMonitor.Domain.Model
     public class WatchedFile
     {
         private ISortStrategy _sortStrategy;
-        private readonly Lazy<ILog> _log = new Lazy<ILog>(() => DependencyManager.Kernel.Get<ILog>());
+        private readonly ILog _log = DependencyManager.Kernel.Get<ILog>();
 
         public virtual string FullPath { get; set; }
         public virtual string FileName { get; set; }
         public virtual bool UploadSuccessful { get; set; }
 
-        public virtual ILog Log { get { return _log.Value; } }
+        protected virtual ILog Log { get { return _log; } }
 
         public virtual ISortStrategy SortStrategy
         {
@@ -37,7 +37,6 @@ namespace DonkeySuite.DesktopMonitor.Domain.Model
                 Log.Debug("Beginning LoadImage method.");
             }
 
-            // TODO: This needs to be abstracted away similar to the XML stuff with settings
             var file = DependencyManager.Kernel.Get<IFileWrapper>();
             var data = file.ReadAllBytes(FullPath);
 
@@ -74,24 +73,36 @@ namespace DonkeySuite.DesktopMonitor.Domain.Model
 
         public virtual void SortFile()
         {
-            if (SortStrategy == null) throw new InvalidOperationException("Sort strategy is not set.");
-
             var oldPath = FullPath;
-            var lastDirSeparator = oldPath.LastIndexOf(Path.DirectorySeparatorChar);
+            var environmentWrapper = DependencyManager.Kernel.Get<IEnvironmentWrapper>();
+            var lastDirSeparator = oldPath.LastIndexOf(environmentWrapper.DirectorySeparatorChar);
             var baseDir = oldPath.Substring(0, lastDirSeparator);
+            string newPath;
 
-            var newPath = SortStrategy.NewFileName(baseDir, FileName);
-
-            if (File.Exists(newPath))
+            try
             {
-                Log.Info(string.Format("Renaming file. From: {0} To: {1}", oldPath, newPath));
-                lastDirSeparator = newPath.LastIndexOf(Path.DirectorySeparatorChar);
-                Directory.CreateDirectory(newPath.Substring(0, lastDirSeparator));
-                File.Move(oldPath, newPath);
+                newPath = SortStrategy.NewFileName(baseDir, FileName);
+            }
+            catch (ActivationException ex)
+            {
+                _log.Debug("Activation exception on SortStrategy", ex);
+                throw new InvalidOperationException("Sort strategy is not set.");
+            }
+
+            var fileWrapper = DependencyManager.Kernel.Get<IFileWrapper>();
+            if (fileWrapper.Exists(newPath))
+            {
+                Log.InfoFormat("Moving file failed due to existing file in destination. File name: {0}", FileName);
             }
             else
             {
-                Log.Info(string.Format("Moving file failed due to existing file in destination. File name: {0}", FileName));
+                var directoryWrapper = DependencyManager.Kernel.Get<IDirectoryWrapper>();
+
+                Log.InfoFormat("Renaming file. From: {0} To: {1}", oldPath, newPath);
+
+                lastDirSeparator = newPath.LastIndexOf(environmentWrapper.DirectorySeparatorChar);
+                directoryWrapper.CreateDirectory(newPath.Substring(0, lastDirSeparator));
+                fileWrapper.Move(oldPath, newPath);
             }
         }
     }

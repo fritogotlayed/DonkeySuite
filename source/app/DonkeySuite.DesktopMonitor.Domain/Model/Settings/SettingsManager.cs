@@ -133,8 +133,8 @@ namespace DonkeySuite.DesktopMonitor.Domain.Model.Settings
 
         private string GetSettingsFilePath()
         {
-            var sep = Path.DirectorySeparatorChar.ToString();
             var environmentWrapper = Kernel.Get<IEnvironmentWrapper>();
+            var sep = environmentWrapper.DirectorySeparatorChar.ToString();
             var userHome = environmentWrapper.UserHomeDirectory;
             var fileFullPath = string.Join(sep, userHome, ".mdsoftware", "dirWatcher", FileName);
 

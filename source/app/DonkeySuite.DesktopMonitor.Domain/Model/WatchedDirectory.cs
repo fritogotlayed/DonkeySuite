@@ -98,14 +98,6 @@ namespace DonkeySuite.DesktopMonitor.Domain.Model
         {
             Log.DebugFormat("populating files and subfiles in {0}", path);
 
-            if (_includeSubDirectories)
-            {
-                foreach (var directory in Directory.GetDirectories(path))
-                {
-                    PopulateFilesForFolder(watchedFileRepository, fileList, directory);
-                }
-            }
-
             foreach (var file in Directory.GetFiles(path).Where(f => _acceptableExtensions.Contains(Path.GetExtension(f))))
             {
                 var watchedFile = watchedFileRepository.GetById(file);
@@ -124,6 +116,15 @@ namespace DonkeySuite.DesktopMonitor.Domain.Model
                 watchedFile.SortStrategy = _sortStrategy;
                 fileList.Add(watchedFile);
             }
+
+            if (_includeSubDirectories)
+            {
+                foreach (var directory in Directory.GetDirectories(path))
+                {
+                    PopulateFilesForFolder(watchedFileRepository, fileList, directory);
+                }
+            }
+
         }
     }
 }

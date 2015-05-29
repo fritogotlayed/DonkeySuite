@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using DonkeySuite.DesktopMonitor.Domain.Model;
 using DonkeySuite.DesktopMonitor.Domain.Model.Requests;
@@ -17,6 +18,9 @@ namespace DonkeySuite.Tests.DesktopMonitor.Domain.Model
         {
             // Arrange
             var strategy = new SimpleSortStrategy();
+            var mockLog = new Mock<ILog>();
+
+            TestKernel.Bind<ILog>().ToMethod(context => mockLog.Object);
 
             // Act & Assert
             var watchedFile = new WatchedFile {SortStrategy = strategy};
@@ -28,11 +32,13 @@ namespace DonkeySuite.Tests.DesktopMonitor.Domain.Model
         {
             // Arrange
             var strategy = new SimpleSortStrategy();
-            var watchedFile = new WatchedFile();
+            var mockLog = new Mock<ILog>();
 
+            TestKernel.Bind<ILog>().ToMethod(context => mockLog.Object);
             TestKernel.Bind<ISortStrategy>().ToMethod(context => strategy).Named("defaultSortStrategy");
 
             // Act & Assert
+            var watchedFile = new WatchedFile();
             Assert.AreSame(strategy, watchedFile.SortStrategy);
         }
 
@@ -132,6 +138,9 @@ namespace DonkeySuite.Tests.DesktopMonitor.Domain.Model
             const string fullPath = "C:\\foo.txt";
             const string baseDirectory = "C:\\";
             const string fileName = "foo.txt";
+            var mockLog = new Mock<ILog>();
+
+            TestKernel.Bind<ILog>().ToMethod(context => mockLog.Object);
 
             var f = new WatchedFile();
             f.FileName = fileName;
@@ -151,6 +160,9 @@ namespace DonkeySuite.Tests.DesktopMonitor.Domain.Model
             const string fullPath = "C:\\bar\\foo.txt";
             const string baseDirectory = "C:\\";
             const string fileName = "foo.txt";
+            var mockLog = new Mock<ILog>();
+
+            TestKernel.Bind<ILog>().ToMethod(context => mockLog.Object);
 
             var f = new WatchedFile();
             f.FileName = fileName;
@@ -162,141 +174,106 @@ namespace DonkeySuite.Tests.DesktopMonitor.Domain.Model
             // Assert
             Assert.AreEqual(false, rslt);
         }
+
+        [Test]
+        public void WatchedFileSortFileThrowsExceptionWhenNoDefaultSortStrategyDefined()
+        {
+            // Arrange
+            var mockLogger = new Mock<ILog>();
+            var mockEnvironmentWrapper = new Mock<IEnvironmentWrapper>();
+
+            mockEnvironmentWrapper.SetupGet(x => x.DirectorySeparatorChar).Returns('/');
+
+            TestKernel.Bind<ILog>().ToMethod(context => mockLogger.Object);
+            TestKernel.Bind<IEnvironmentWrapper>().ToMethod(context => mockEnvironmentWrapper.Object);
+
+            // Act
+            var file = new WatchedFile
+            {
+                FullPath = "/foo/bar.txt",
+                FileName = "bar.txt",
+                UploadSuccessful = true
+            };
+
+            try
+            {
+                file.SortFile();
+            }
+            catch (InvalidOperationException ex)
+            {
+                Assert.AreEqual("Sort strategy is not set.", ex.Message);
+            }
+        }
+
+        [Test]
+        public void WatchedFileSortFileLogsMessageWhenDestinationAlreadyHasFileWithSameName()
+        {
+            // Arrange
+            var mockLog = new Mock<ILog>();
+            var mockEnvironmentWrapper = new Mock<IEnvironmentWrapper>();
+            var mockSortStrategy = new Mock<ISortStrategy>();
+            var mockFileWrapper = new Mock<IFileWrapper>();
+
+            mockEnvironmentWrapper.SetupGet(x => x.DirectorySeparatorChar).Returns('/');
+
+            mockSortStrategy.Setup(x => x.NewFileName("/foo", "bar.txt")).Returns("/foo/b/bar.txt");
+
+            mockFileWrapper.Setup(x => x.Exists("/foo/b/bar.txt")).Returns(true);
+
+            TestKernel.Bind<ILog>().ToMethod(context => mockLog.Object);
+            TestKernel.Bind<IEnvironmentWrapper>().ToMethod(context => mockEnvironmentWrapper.Object);
+            TestKernel.Bind<IFileWrapper>().ToMethod(context => mockFileWrapper.Object);
+
+            var file = new WatchedFile
+            {
+                FullPath = "/foo/bar.txt",
+                FileName = "bar.txt",
+                SortStrategy = mockSortStrategy.Object,
+                UploadSuccessful = true
+            };
+
+            // Act
+            file.SortFile();
+
+            // Assert
+            mockLog.Verify(x => x.InfoFormat("Moving file failed due to existing file in destination. File name: {0}", "bar.txt"), Times.Once);
+        }
+
+        [Test]
+        public void WatchedFileSortFileMovesFileBasedOnSortStrategyWhenDestinationIsClear()
+        {
+            // Arrange
+            var mockLog = new Mock<ILog>();
+            var mockEnvironmentWrapper = new Mock<IEnvironmentWrapper>();
+            var mockSortStrategy = new Mock<ISortStrategy>();
+            var mockFileWrapper = new Mock<IFileWrapper>();
+            var mockDirectoryWrapper = new Mock<IDirectoryWrapper>();
+
+            mockEnvironmentWrapper.SetupGet(x => x.DirectorySeparatorChar).Returns('/');
+
+            mockSortStrategy.Setup(x => x.NewFileName("/foo", "bar.txt")).Returns("/foo/b/bar.txt");
+
+            mockFileWrapper.Setup(x => x.Exists("/foo/b/bar.txt")).Returns(false);
+
+            TestKernel.Bind<ILog>().ToMethod(context => mockLog.Object);
+            TestKernel.Bind<IEnvironmentWrapper>().ToMethod(context => mockEnvironmentWrapper.Object);
+            TestKernel.Bind<IFileWrapper>().ToMethod(context => mockFileWrapper.Object);
+            TestKernel.Bind<IDirectoryWrapper>().ToMethod(context => mockDirectoryWrapper.Object);
+
+            var file = new WatchedFile
+            {
+                FullPath = "/foo/bar.txt",
+                FileName = "bar.txt",
+                SortStrategy = mockSortStrategy.Object,
+                UploadSuccessful = true
+            };
+
+            // Act
+            file.SortFile();
+
+            // Assert
+            mockLog.Verify(x => x.InfoFormat("Renaming file. From: {0} To: {1}", "/foo/bar.txt", "/foo/b/bar.txt"), Times.Once);
+            mockFileWrapper.Verify(x => x.Move("/foo/bar.txt", "/foo/b/bar.txt"), Times.Once);
+        }
     }
 }
-/*
-public class WatchedFileTest {
-    @Test
-    public final void watchedFileSortFileThrowsExceptionWhenNoDefaultSortStrategyDefined(){
-        // Arrange
-        WatchedFile f = new WatchedFile();
-
-        try{
-                // Act
-                f.sortFile();
-        }catch(Exception ex){
-                // Assert
-            assertTrue(ex instanceof IllegalStateException);
-            assertEquals("Sort strategy is not set.", ex.getMessage());
-        }
-    }
-
-    @Test
-    public final void watchedFileSortFileLogsMessageWhenDestinationAlreadyHasFileWithSameName(){
-        // Arrange
-        Log logMock = mock(Log.class);
-        File oldFileMock = mock(File.class);
-        File newFileMock = mock(File.class);
-        SortStrategy strategy = new SimpleSortStrategy();
-        String fileName = "file.txt";
-        String oldFilePath;
-        final List<String> logMessages = new ArrayList<String>();
-
-        if(File.separator.equals("\\")){
-            oldFilePath = "c:\\some\\file\\path\\" + fileName;
-        }else{
-            oldFilePath = "/some/file/path/" + fileName;
-        }
-
-        when(oldFileMock.getPath()).thenReturn(oldFilePath);
-        when(newFileMock.exists()).thenReturn(true);
-        MockBeanProvider.enqueueMockLogger(logMock);
-        MockBeanProvider.enqueueMockLogger(logMock);
-        MockBeanProvider.enqueueOneArgFile(oldFileMock);
-        MockBeanProvider.enqueueOneArgFile(newFileMock);
-
-        doAnswer(new Answer(){
-            public Object answer(InvocationOnMock invocation) throws Throwable {
-                Object[] args = invocation.getArguments();
-                logMessages.add((String)args[0]);
-                return null;
-            }
-        }).when(logMock).trace(any(String.class));
-        WatchedFile f = new WatchedFile();
-        f.setSortStrategy(strategy);
-        f.setFileName(fileName);
-
-        // Act
-        f.sortFile();
-
-        // Assert
-        assertEquals("Moving file failed due to existing file in destination. File name: " + fileName, logMessages.get(0));
-    }
-
-    @Test
-    public final void watchedFileSortFileMovesFileBasedOnSortStrategyWhenDestinationIsClear(){
-        // Arrange
-        Log logMock = mock(Log.class);
-        File oldFileMock = mock(File.class);
-        File newFileMock = mock(File.class);
-        File tempFileMock = mock(File.class);
-        SortStrategy strategy = new SimpleSortStrategy();
-        String fileName = "file.txt";
-        String oldFilePath;
-        String newFilePath;
-        String newFileParentPath;
-        final List<String> logMessages = new ArrayList<String>();
-
-        if(System.getProperty("os.name").contains("Windows")){
-            oldFilePath = "c:\\some\\file\\path\\" + fileName;
-            newFileParentPath = "c:\\some\\file\\path\\p\\";
-            newFilePath = newFileParentPath + fileName;
-        }else{
-            oldFilePath = "/some/file/path/" + fileName;
-            newFileParentPath = "/some/file/path/p/";
-            newFilePath = newFileParentPath + fileName;
-        }
-
-        when(oldFileMock.getPath()).thenReturn(oldFilePath);
-        when(newFileMock.exists()).thenReturn(false);
-        when(newFileMock.getPath()).thenReturn(newFilePath);
-        when(newFileMock.getParent()).thenReturn(newFileParentPath);
-        MockBeanProvider.enqueueMockLogger(logMock);
-        MockBeanProvider.enqueueMockLogger(logMock);
-        MockBeanProvider.enqueueOneArgFile(oldFileMock);
-        MockBeanProvider.enqueueOneArgFile(newFileMock);
-        MockBeanProvider.enqueueOneArgFile(tempFileMock);
-
-        doAnswer(new Answer(){
-            public Object answer(InvocationOnMock invocation) throws Throwable {
-                Object[] args = invocation.getArguments();
-                logMessages.add((String)args[0]);
-                return null;
-            }
-        }).when(logMock).trace(any(String.class));
-        WatchedFile f = new WatchedFile();
-        f.setSortStrategy(strategy);
-        f.setFileName(fileName);
-
-        // Act
-        f.sortFile();
-
-        // Assert
-        assertEquals("Renaming file. From: " + oldFilePath + " To: " + newFilePath, logMessages.get(0));
-        verify(oldFileMock).renameTo(newFileMock);
-    }
-
-    private final File createTestFile() throws Exception{
-        BufferedWriter writer = null;
-        File tempFile = null;
-        try {
-            // Create a temporary file
-            tempFile = new File(testFileName);
-
-            // Write data to the file
-            writer = new BufferedWriter(new FileWriter(tempFile));
-            writer.write("test file data.");
-        } catch (Exception e) {
-            throw e;
-        } finally {
-            try {
-                // Close the writer regardless of what happens...
-                writer.close();
-            } catch (Exception e) {
-            }
-        }
-
-        return tempFile;
-    }
-}
-*/

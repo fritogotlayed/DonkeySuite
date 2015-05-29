@@ -4,5 +4,6 @@
     {
         bool IsWindowsPlatform { get; }
         string UserHomeDirectory { get; }
+        char DirectorySeparatorChar { get; }
     }
 }

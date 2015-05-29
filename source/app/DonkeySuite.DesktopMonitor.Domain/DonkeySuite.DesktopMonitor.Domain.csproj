@@ -52,8 +52,10 @@
     <Compile Include="Model\Requests\AddImageRequest.cs" />
     <Compile Include="Model\Requests\BaseRequest.cs" />
     <Compile Include="Model\Requests\WebRequestFactory.cs" />
+    <Compile Include="Model\Wrappers\DirectoryWrapper.cs" />
     <Compile Include="Model\Wrappers\EnvironmentWrapper.cs" />
     <Compile Include="Model\Wrappers\FileWrapper.cs" />
+    <Compile Include="Model\Wrappers\IDirectoryWrapper.cs" />
     <Compile Include="Model\Wrappers\IEnvironmentWrapper.cs" />
     <Compile Include="Model\Wrappers\IFileWrapper.cs" />
     <Compile Include="Model\Settings\ImageServer.cs" />

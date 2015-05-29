@@ -18,5 +18,10 @@ namespace DonkeySuite.DesktopMonitor.Domain.Model.Wrappers
         {
             return File.ReadAllBytes(path);
         }
+
+        public void Move(string sourceFileName, string destFileName)
+        {
+            File.Move(sourceFileName, destFileName);
+        }
     }
 }
