@@ -4,7 +4,8 @@ using System.Xml.Serialization;
 using DonkeySuite.DesktopMonitor.Domain.Model.Requests;
 using DonkeySuite.DesktopMonitor.Domain.Model.Settings;
 using DonkeySuite.DesktopMonitor.Domain.Model.SortStrategies;
-using DonkeySuite.DesktopMonitor.Domain.Model.Wrappers;
+using DonkeySuite.SystemWrappers;
+using DonkeySuite.SystemWrappers.Interfaces;
 using log4net;
 using Ninject;
 
@@ -55,10 +56,10 @@ namespace DonkeySuite.DesktopMonitor.Domain
             Log.Debug("Initializing kernel.");
 
             kernel.Bind<AddImageRequest>().ToSelf().InTransientScope();
-            kernel.Bind<IEnvironmentWrapper>().To<EnvironmentWrapper>().InTransientScope();
-            kernel.Bind<IFileWrapper>().To<FileWrapper>().InTransientScope();
+            kernel.Bind<IEnvironment>().To<EnvironmentWrapper>().InTransientScope();
+            kernel.Bind<IFile>().To<FileWrapper>().InTransientScope();
             kernel.Bind<ILog>().ToMethod(context => LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType));
-            kernel.Bind<ISemaphoreWrapper>().To<SemaphoreWrapper>().InTransientScope()
+            kernel.Bind<ISemaphore>().To<SemaphoreWrapper>().InTransientScope()
                 .WithConstructorArgument("initialCount", 1)
                 .WithConstructorArgument("maximumCount", 1);
             kernel.Bind<ISerializer>()

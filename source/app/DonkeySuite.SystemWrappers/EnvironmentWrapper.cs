@@ -1,9 +1,10 @@
 ﻿using System;
 using System.IO;
+using DonkeySuite.SystemWrappers.Interfaces;
 
-namespace DonkeySuite.DesktopMonitor.Domain.Model.Wrappers
+namespace DonkeySuite.SystemWrappers
 {
-    public class EnvironmentWrapper : IEnvironmentWrapper
+    public class EnvironmentWrapper : IEnvironment
     {
         public bool IsWindowsPlatform
         {

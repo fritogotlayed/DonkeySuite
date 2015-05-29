@@ -1,8 +1,9 @@
 ﻿using System.IO;
+using DonkeySuite.SystemWrappers.Interfaces;
 
-namespace DonkeySuite.DesktopMonitor.Domain.Model.Wrappers
+namespace DonkeySuite.SystemWrappers
 {
-    public class FileWrapper : IFileWrapper
+    public class FileWrapper : IFile
     {
         public bool Exists(string path)
         {

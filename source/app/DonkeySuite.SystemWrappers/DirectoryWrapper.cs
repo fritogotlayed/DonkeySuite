@@ -1,8 +1,9 @@
 ﻿using System.IO;
+using DonkeySuite.SystemWrappers.Interfaces;
 
-namespace DonkeySuite.DesktopMonitor.Domain.Model.Wrappers
+namespace DonkeySuite.SystemWrappers
 {
-    public class DirectoryWrapper : IDirectoryWrapper
+    public class DirectoryWrapper : IDirectory
     {
         public DirectoryInfo CreateDirectory(string path)
         {

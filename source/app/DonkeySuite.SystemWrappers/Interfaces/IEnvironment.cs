@@ -1,6 +1,6 @@
-﻿namespace DonkeySuite.DesktopMonitor.Domain.Model.Wrappers
+﻿namespace DonkeySuite.SystemWrappers.Interfaces
 {
-    public interface IEnvironmentWrapper
+    public interface IEnvironment
     {
         bool IsWindowsPlatform { get; }
         string UserHomeDirectory { get; }

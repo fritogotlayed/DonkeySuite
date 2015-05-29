@@ -1,7 +1,8 @@
 ﻿using System.IO;
 using System.Xml.Serialization;
+using DonkeySuite.SystemWrappers.Interfaces;
 
-namespace DonkeySuite.DesktopMonitor.Domain.Model.Wrappers
+namespace DonkeySuite.SystemWrappers
 {
     public class XmlSerializerWrapper : ISerializer
     {

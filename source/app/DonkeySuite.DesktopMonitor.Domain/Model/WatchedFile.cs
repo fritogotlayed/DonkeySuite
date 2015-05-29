@@ -3,7 +3,7 @@ using System.IO;
 using DonkeySuite.DesktopMonitor.Domain.Model.Requests;
 using DonkeySuite.DesktopMonitor.Domain.Model.Settings;
 using DonkeySuite.DesktopMonitor.Domain.Model.SortStrategies;
-using DonkeySuite.DesktopMonitor.Domain.Model.Wrappers;
+using DonkeySuite.SystemWrappers.Interfaces;
 using log4net;
 using Ninject;
 
@@ -37,7 +37,7 @@ namespace DonkeySuite.DesktopMonitor.Domain.Model
                 Log.Debug("Beginning LoadImage method.");
             }
 
-            var file = DependencyManager.Kernel.Get<IFileWrapper>();
+            var file = DependencyManager.Kernel.Get<IFile>();
             var data = file.ReadAllBytes(FullPath);
 
             if (Log.IsInfoEnabled)
@@ -74,7 +74,7 @@ namespace DonkeySuite.DesktopMonitor.Domain.Model
         public virtual void SortFile()
         {
             var oldPath = FullPath;
-            var environmentWrapper = DependencyManager.Kernel.Get<IEnvironmentWrapper>();
+            var environmentWrapper = DependencyManager.Kernel.Get<IEnvironment>();
             var lastDirSeparator = oldPath.LastIndexOf(environmentWrapper.DirectorySeparatorChar);
             var baseDir = oldPath.Substring(0, lastDirSeparator);
             string newPath;
@@ -89,14 +89,14 @@ namespace DonkeySuite.DesktopMonitor.Domain.Model
                 throw new InvalidOperationException("Sort strategy is not set.");
             }
 
-            var fileWrapper = DependencyManager.Kernel.Get<IFileWrapper>();
+            var fileWrapper = DependencyManager.Kernel.Get<IFile>();
             if (fileWrapper.Exists(newPath))
             {
                 Log.InfoFormat("Moving file failed due to existing file in destination. File name: {0}", FileName);
             }
             else
             {
-                var directoryWrapper = DependencyManager.Kernel.Get<IDirectoryWrapper>();
+                var directoryWrapper = DependencyManager.Kernel.Get<IDirectory>();
 
                 Log.InfoFormat("Renaming file. From: {0} To: {1}", oldPath, newPath);
 

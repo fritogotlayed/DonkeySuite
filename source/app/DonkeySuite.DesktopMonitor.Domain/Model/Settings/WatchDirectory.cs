@@ -1,5 +1,5 @@
 ﻿using System.Xml.Serialization;
-using DonkeySuite.DesktopMonitor.Domain.Model.Wrappers;
+using DonkeySuite.SystemWrappers.Interfaces;
 using Ninject;
 
 namespace DonkeySuite.DesktopMonitor.Domain.Model.Settings
@@ -23,7 +23,7 @@ namespace DonkeySuite.DesktopMonitor.Domain.Model.Settings
 
         public void PopulateWithDefaults()
         {
-            var environment = DependencyManager.Kernel.Get<IEnvironmentWrapper>();
+            var environment = DependencyManager.Kernel.Get<IEnvironment>();
             Path = environment.IsWindowsPlatform ? "C:\\" : "/"; // TODO: Make platform independent
             FileExtensions = "jpg,jpeg,gif,tiff";
             Mode = OperationMode.Unknown;

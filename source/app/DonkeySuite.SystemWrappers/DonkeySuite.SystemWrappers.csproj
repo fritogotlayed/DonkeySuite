@@ -4,11 +4,11 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{F284CAB2-54E4-4918-B691-FB5923103225}</ProjectGuid>
+    <ProjectGuid>{7C5E0314-E847-4088-8614-65D8812FFC9A}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>DonkeySuite.DesktopMonitor.Domain</RootNamespace>
-    <AssemblyName>DonkeySuite.DesktopMonitor.Domain</AssemblyName>
+    <RootNamespace>DonkeySuite.SystemWrappers</RootNamespace>
+    <AssemblyName>DonkeySuite.SystemWrappers</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -30,14 +30,6 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="log4net, Version=1.2.13.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\log4net.2.0.3\lib\net40-full\log4net.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Ninject, Version=3.2.0.0, Culture=neutral, PublicKeyToken=c7192dc5380945e7, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Ninject.3.2.2.0\lib\net45-full\Ninject.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -47,31 +39,17 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="DependencyManager.cs" />
-    <Compile Include="IRepository.cs" />
-    <Compile Include="Model\Requests\AddImageRequest.cs" />
-    <Compile Include="Model\Requests\BaseRequest.cs" />
-    <Compile Include="Model\Requests\WebRequestFactory.cs" />
-    <Compile Include="Model\Settings\ImageServer.cs" />
-    <Compile Include="Model\Settings\OperationMode.cs" />
-    <Compile Include="Model\Settings\SettingsRoot.cs" />
-    <Compile Include="Model\Settings\SettingsManager.cs" />
-    <Compile Include="Model\Settings\WatchDirectories.cs" />
-    <Compile Include="Model\Settings\WatchDirectory.cs" />
-    <Compile Include="Model\SortStrategies\ISortStrategy.cs" />
-    <Compile Include="Model\SortStrategies\SimpleSortStrategy.cs" />
-    <Compile Include="Model\WatchedDirectory.cs" />
-    <Compile Include="Model\WatchedFile.cs" />
+    <Compile Include="DirectoryWrapper.cs" />
+    <Compile Include="EnvironmentWrapper.cs" />
+    <Compile Include="FileWrapper.cs" />
+    <Compile Include="Interfaces\IDirectory.cs" />
+    <Compile Include="Interfaces\IEnvironment.cs" />
+    <Compile Include="Interfaces\IFile.cs" />
+    <Compile Include="Interfaces\ISemaphore.cs" />
+    <Compile Include="Interfaces\ISerializer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\DonkeySuite.SystemWrappers\DonkeySuite.SystemWrappers.csproj">
-      <Project>{7c5e0314-e847-4088-8614-65d8812ffc9a}</Project>
-      <Name>DonkeySuite.SystemWrappers</Name>
-    </ProjectReference>
+    <Compile Include="SemaphoreWrapper.cs" />
+    <Compile Include="XmlSerializerWrapper.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

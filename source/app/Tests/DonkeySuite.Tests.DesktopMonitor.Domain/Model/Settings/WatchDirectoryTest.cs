@@ -1,7 +1,7 @@
 using System;
 using DonkeySuite.DesktopMonitor.Domain;
 using DonkeySuite.DesktopMonitor.Domain.Model.Settings;
-using DonkeySuite.DesktopMonitor.Domain.Model.Wrappers;
+using DonkeySuite.SystemWrappers.Interfaces;
 using Moq;
 using Ninject;
 using NUnit.Framework;
@@ -43,10 +43,10 @@ namespace DonkeySuite.Tests.DesktopMonitor.Domain.Model.Settings
         {
             // Arrange
             var dir = new WatchDirectory();
-            var mockEnvironmentWrapper = new Mock<IEnvironmentWrapper>();
+            var mockEnvironmentWrapper = new Mock<IEnvironment>();
 
             mockEnvironmentWrapper.SetupGet(x => x.IsWindowsPlatform).Returns(true);
-            DependencyManager.Kernel.Bind<IEnvironmentWrapper>().ToMethod(context => mockEnvironmentWrapper.Object);
+            DependencyManager.Kernel.Bind<IEnvironment>().ToMethod(context => mockEnvironmentWrapper.Object);
 
             // Act
             dir.PopulateWithDefaults();

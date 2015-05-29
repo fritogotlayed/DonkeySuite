@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using DonkeySuite.DesktopMonitor.Domain;
 using DonkeySuite.DesktopMonitor.Domain.Model.Settings;
-using DonkeySuite.DesktopMonitor.Domain.Model.Wrappers;
+using DonkeySuite.SystemWrappers.Interfaces;
 using Moq;
 using Ninject;
 using NUnit.Framework;
@@ -40,9 +40,9 @@ namespace DonkeySuite.Tests.DesktopMonitor.Domain.Model.Settings
         {
             // Arrange
             WatchDirectories dirs = new WatchDirectories();
-            var mockEnvironmentWrapper = new Mock<IEnvironmentWrapper>();
+            var mockEnvironmentWrapper = new Mock<IEnvironment>();
 
-            DependencyManager.Kernel.Bind<IEnvironmentWrapper>().ToMethod(context => mockEnvironmentWrapper.Object);
+            DependencyManager.Kernel.Bind<IEnvironment>().ToMethod(context => mockEnvironmentWrapper.Object);
 
             // Act
             dirs.PopulateWithDefaults();
@@ -57,9 +57,9 @@ namespace DonkeySuite.Tests.DesktopMonitor.Domain.Model.Settings
         {
             // Arrange
             var dir = new WatchDirectories();
-            var mockEnvironmentWrapper = new Mock<IEnvironmentWrapper>();
+            var mockEnvironmentWrapper = new Mock<IEnvironment>();
 
-            DependencyManager.Kernel.Bind<IEnvironmentWrapper>().ToMethod(context => mockEnvironmentWrapper.Object);
+            DependencyManager.Kernel.Bind<IEnvironment>().ToMethod(context => mockEnvironmentWrapper.Object);
             dir.PopulateWithDefaults();
 
             // Act
@@ -76,9 +76,9 @@ namespace DonkeySuite.Tests.DesktopMonitor.Domain.Model.Settings
         {
             // Arrange
             var dir = new WatchDirectories();
-            var mockEnvironmentWrapper = new Mock<IEnvironmentWrapper>();
+            var mockEnvironmentWrapper = new Mock<IEnvironment>();
 
-            DependencyManager.Kernel.Bind<IEnvironmentWrapper>().ToMethod(context => mockEnvironmentWrapper.Object);
+            DependencyManager.Kernel.Bind<IEnvironment>().ToMethod(context => mockEnvironmentWrapper.Object);
             dir.PopulateWithDefaults();
 
             // Act

@@ -1,8 +1,9 @@
 ﻿using System.Threading;
+using DonkeySuite.SystemWrappers.Interfaces;
 
-namespace DonkeySuite.DesktopMonitor.Domain.Model.Wrappers
+namespace DonkeySuite.SystemWrappers
 {
-    public class SemaphoreWrapper : ISemaphoreWrapper
+    public class SemaphoreWrapper : ISemaphore
     {
         private readonly Semaphore _semaphore;
         public SemaphoreWrapper(int initialCount, int maximumCount)

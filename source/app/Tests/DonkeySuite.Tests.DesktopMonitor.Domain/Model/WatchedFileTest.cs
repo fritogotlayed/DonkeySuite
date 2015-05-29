@@ -3,7 +3,7 @@ using System.IO;
 using DonkeySuite.DesktopMonitor.Domain.Model;
 using DonkeySuite.DesktopMonitor.Domain.Model.Requests;
 using DonkeySuite.DesktopMonitor.Domain.Model.SortStrategies;
-using DonkeySuite.DesktopMonitor.Domain.Model.Wrappers;
+using DonkeySuite.SystemWrappers.Interfaces;
 using log4net;
 using Moq;
 using NUnit.Framework;
@@ -48,10 +48,10 @@ namespace DonkeySuite.Tests.DesktopMonitor.Domain.Model
             // Arrange
             const string filePath = "/foo/bar/blah.txt";
             var mockLog = new Mock<ILog>();
-            var mockFileWrapper = new Mock<IFileWrapper>();
+            var mockFileWrapper = new Mock<IFile>();
 
             TestKernel.Bind<ILog>().ToMethod(context => mockLog.Object);
-            TestKernel.Bind<IFileWrapper>().ToMethod(context => mockFileWrapper.Object);
+            TestKernel.Bind<IFile>().ToMethod(context => mockFileWrapper.Object);
 
             mockLog.SetupGet(x => x.IsInfoEnabled).Returns(true);
             mockFileWrapper.Setup(x => x.ReadAllBytes(filePath)).Returns(new byte[] {1, 4, 3});
@@ -74,10 +74,10 @@ namespace DonkeySuite.Tests.DesktopMonitor.Domain.Model
             // Arrange
             const string filePath = "/foo/bar/blah.txt";
             var mockLog = new Mock<ILog>();
-            var mockFileWrapper = new Mock<IFileWrapper>();
+            var mockFileWrapper = new Mock<IFile>();
 
             TestKernel.Bind<ILog>().ToMethod(context => mockLog.Object);
-            TestKernel.Bind<IFileWrapper>().ToMethod(context => mockFileWrapper.Object);
+            TestKernel.Bind<IFile>().ToMethod(context => mockFileWrapper.Object);
 
             mockLog.SetupGet(x => x.IsInfoEnabled).Returns(false);
             mockFileWrapper.Setup(x => x.ReadAllBytes(filePath)).Returns(new byte[] {1, 4, 3});
@@ -100,18 +100,18 @@ namespace DonkeySuite.Tests.DesktopMonitor.Domain.Model
             // Arrange
             const string filePath = "/foo/bar/testFile.txt";
             var mockLog = new Mock<ILog>();
-            var mockFileWrapper = new Mock<IFileWrapper>();
-            var mockSemaphoreWrapper = new Mock<ISemaphoreWrapper>();
+            var mockFileWrapper = new Mock<IFile>();
+            var mockSemaphoreWrapper = new Mock<ISemaphore>();
             var mockSerializer = new Mock<ISerializer>();
-            var mockEnvironmentWrapper = new Mock<IEnvironmentWrapper>();
+            var mockEnvironmentWrapper = new Mock<IEnvironment>();
             var mockStreamWriter = new Mock<TextWriter>();
             var mockAddImageRequest = new Mock<AddImageRequest>();
 
             TestKernel.Bind<ILog>().ToMethod(context => mockLog.Object);
-            TestKernel.Bind<IFileWrapper>().ToMethod(context => mockFileWrapper.Object);
-            TestKernel.Bind<ISemaphoreWrapper>().ToMethod(context => mockSemaphoreWrapper.Object);
+            TestKernel.Bind<IFile>().ToMethod(context => mockFileWrapper.Object);
+            TestKernel.Bind<ISemaphore>().ToMethod(context => mockSemaphoreWrapper.Object);
             TestKernel.Bind<ISerializer>().ToMethod(context => mockSerializer.Object).Named("SettingsSerializer");
-            TestKernel.Bind<IEnvironmentWrapper>().ToMethod(context => mockEnvironmentWrapper.Object);
+            TestKernel.Bind<IEnvironment>().ToMethod(context => mockEnvironmentWrapper.Object);
             TestKernel.Bind<TextWriter>().ToMethod(context => mockStreamWriter.Object);
             TestKernel.Bind<AddImageRequest>().ToMethod(context => mockAddImageRequest.Object);
 
@@ -180,12 +180,12 @@ namespace DonkeySuite.Tests.DesktopMonitor.Domain.Model
         {
             // Arrange
             var mockLogger = new Mock<ILog>();
-            var mockEnvironmentWrapper = new Mock<IEnvironmentWrapper>();
+            var mockEnvironmentWrapper = new Mock<IEnvironment>();
 
             mockEnvironmentWrapper.SetupGet(x => x.DirectorySeparatorChar).Returns('/');
 
             TestKernel.Bind<ILog>().ToMethod(context => mockLogger.Object);
-            TestKernel.Bind<IEnvironmentWrapper>().ToMethod(context => mockEnvironmentWrapper.Object);
+            TestKernel.Bind<IEnvironment>().ToMethod(context => mockEnvironmentWrapper.Object);
 
             // Act
             var file = new WatchedFile
@@ -210,9 +210,9 @@ namespace DonkeySuite.Tests.DesktopMonitor.Domain.Model
         {
             // Arrange
             var mockLog = new Mock<ILog>();
-            var mockEnvironmentWrapper = new Mock<IEnvironmentWrapper>();
+            var mockEnvironmentWrapper = new Mock<IEnvironment>();
             var mockSortStrategy = new Mock<ISortStrategy>();
-            var mockFileWrapper = new Mock<IFileWrapper>();
+            var mockFileWrapper = new Mock<IFile>();
 
             mockEnvironmentWrapper.SetupGet(x => x.DirectorySeparatorChar).Returns('/');
 
@@ -221,8 +221,8 @@ namespace DonkeySuite.Tests.DesktopMonitor.Domain.Model
             mockFileWrapper.Setup(x => x.Exists("/foo/b/bar.txt")).Returns(true);
 
             TestKernel.Bind<ILog>().ToMethod(context => mockLog.Object);
-            TestKernel.Bind<IEnvironmentWrapper>().ToMethod(context => mockEnvironmentWrapper.Object);
-            TestKernel.Bind<IFileWrapper>().ToMethod(context => mockFileWrapper.Object);
+            TestKernel.Bind<IEnvironment>().ToMethod(context => mockEnvironmentWrapper.Object);
+            TestKernel.Bind<IFile>().ToMethod(context => mockFileWrapper.Object);
 
             var file = new WatchedFile
             {
@@ -244,10 +244,10 @@ namespace DonkeySuite.Tests.DesktopMonitor.Domain.Model
         {
             // Arrange
             var mockLog = new Mock<ILog>();
-            var mockEnvironmentWrapper = new Mock<IEnvironmentWrapper>();
+            var mockEnvironmentWrapper = new Mock<IEnvironment>();
             var mockSortStrategy = new Mock<ISortStrategy>();
-            var mockFileWrapper = new Mock<IFileWrapper>();
-            var mockDirectoryWrapper = new Mock<IDirectoryWrapper>();
+            var mockFileWrapper = new Mock<IFile>();
+            var mockDirectoryWrapper = new Mock<IDirectory>();
 
             mockEnvironmentWrapper.SetupGet(x => x.DirectorySeparatorChar).Returns('/');
 
@@ -256,9 +256,9 @@ namespace DonkeySuite.Tests.DesktopMonitor.Domain.Model
             mockFileWrapper.Setup(x => x.Exists("/foo/b/bar.txt")).Returns(false);
 
             TestKernel.Bind<ILog>().ToMethod(context => mockLog.Object);
-            TestKernel.Bind<IEnvironmentWrapper>().ToMethod(context => mockEnvironmentWrapper.Object);
-            TestKernel.Bind<IFileWrapper>().ToMethod(context => mockFileWrapper.Object);
-            TestKernel.Bind<IDirectoryWrapper>().ToMethod(context => mockDirectoryWrapper.Object);
+            TestKernel.Bind<IEnvironment>().ToMethod(context => mockEnvironmentWrapper.Object);
+            TestKernel.Bind<IFile>().ToMethod(context => mockFileWrapper.Object);
+            TestKernel.Bind<IDirectory>().ToMethod(context => mockDirectoryWrapper.Object);
 
             var file = new WatchedFile
             {

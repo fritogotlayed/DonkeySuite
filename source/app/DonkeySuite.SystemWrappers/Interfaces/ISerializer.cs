@@ -1,6 +1,6 @@
 ﻿using System.IO;
 
-namespace DonkeySuite.DesktopMonitor.Domain.Model.Wrappers
+namespace DonkeySuite.SystemWrappers.Interfaces
 {
     public interface ISerializer
     {

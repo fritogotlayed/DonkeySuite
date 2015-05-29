@@ -2,7 +2,7 @@
 using System.IO;
 using System.Runtime.Serialization;
 using System.Threading;
-using DonkeySuite.DesktopMonitor.Domain.Model.Wrappers;
+using DonkeySuite.SystemWrappers.Interfaces;
 using log4net;
 using Ninject;
 using Ninject.Parameters;
@@ -13,10 +13,10 @@ namespace DonkeySuite.DesktopMonitor.Domain.Model.Settings
     {
         private readonly ILog _log;
         private const string FileName = "settings.xml";
-        private readonly ISemaphoreWrapper _available;
+        private readonly ISemaphore _available;
         private SettingsRoot _settingsRoot;
 
-        public SettingsManager(ILog log, ISemaphoreWrapper semaphore)
+        public SettingsManager(ILog log, ISemaphore semaphore)
         {
             // TODO: Get rid of the constructor injection
             _log = log;
@@ -53,7 +53,7 @@ namespace DonkeySuite.DesktopMonitor.Domain.Model.Settings
                 var serializer = Kernel.Get<ISerializer>("SettingsSerializer");
 
                 var path = GetSettingsFilePath();
-                if (!Kernel.Get<IFileWrapper>().Exists(path))
+                if (!Kernel.Get<IFile>().Exists(path))
                 {
                     _log.Warn(string.Format("Settings file \"{0}\" does not exist. Populating with defaults.", path));
                     _settingsRoot = DependencyManager.Kernel.Get<SettingsRoot>();
@@ -77,7 +77,7 @@ namespace DonkeySuite.DesktopMonitor.Domain.Model.Settings
 
                     try
                     {
-                        using (var fileStream = Kernel.Get<IFileWrapper>().Open(path, FileMode.Open))
+                        using (var fileStream = Kernel.Get<IFile>().Open(path, FileMode.Open))
                         {
                             _settingsRoot = (SettingsRoot) serializer.Deserialize(fileStream);
                         }
@@ -133,7 +133,7 @@ namespace DonkeySuite.DesktopMonitor.Domain.Model.Settings
 
         private string GetSettingsFilePath()
         {
-            var environmentWrapper = Kernel.Get<IEnvironmentWrapper>();
+            var environmentWrapper = Kernel.Get<IEnvironment>();
             var sep = environmentWrapper.DirectorySeparatorChar.ToString();
             var userHome = environmentWrapper.UserHomeDirectory;
             var fileFullPath = string.Join(sep, userHome, ".mdsoftware", "dirWatcher", FileName);

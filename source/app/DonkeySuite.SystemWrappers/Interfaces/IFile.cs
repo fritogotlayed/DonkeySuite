@@ -1,8 +1,8 @@
 ﻿using System.IO;
 
-namespace DonkeySuite.DesktopMonitor.Domain.Model.Wrappers
+namespace DonkeySuite.SystemWrappers.Interfaces
 {
-    public interface IFileWrapper
+    public interface IFile
     {
         bool Exists(string path);
         FileStream Open(string path, FileMode mode);

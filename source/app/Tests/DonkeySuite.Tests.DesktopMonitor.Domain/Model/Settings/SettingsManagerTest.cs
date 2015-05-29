@@ -4,7 +4,7 @@ using System.Runtime.Serialization;
 using System.Threading;
 using DonkeySuite.DesktopMonitor.Domain;
 using DonkeySuite.DesktopMonitor.Domain.Model.Settings;
-using DonkeySuite.DesktopMonitor.Domain.Model.Wrappers;
+using DonkeySuite.SystemWrappers.Interfaces;
 using log4net;
 using Moq;
 using Ninject;
@@ -40,18 +40,18 @@ namespace DonkeySuite.Tests.DesktopMonitor.Domain.Model.Settings
         {
             // Arrange
             var mockSerializer = new Mock<ISerializer>();
-            var mockFileWrapper = new Mock<IFileWrapper>();
+            var mockFileWrapper = new Mock<IFile>();
             var mockStreamWriter = new Mock<TextWriter>();
             var mockLogger = new Mock<ILog>();
-            var mockSemaphore = new Mock<ISemaphoreWrapper>();
-            var mockEnvironmentWrapper = new Mock<IEnvironmentWrapper>();
+            var mockSemaphore = new Mock<ISemaphore>();
+            var mockEnvironmentWrapper = new Mock<IEnvironment>();
 
             mockFileWrapper.Setup(x => x.Exists(It.IsAny<string>())).Returns(false);
             mockFileWrapper.Setup(x => x.Open(It.IsAny<string>(), FileMode.Open)).Returns((FileStream)null);
             mockEnvironmentWrapper.SetupGet(x => x.IsWindowsPlatform).Returns(true);
 
-            TestKernel.Bind<IEnvironmentWrapper>().ToMethod(context => mockEnvironmentWrapper.Object);
-            TestKernel.Bind<IFileWrapper>().ToMethod(context => mockFileWrapper.Object);
+            TestKernel.Bind<IEnvironment>().ToMethod(context => mockEnvironmentWrapper.Object);
+            TestKernel.Bind<IFile>().ToMethod(context => mockFileWrapper.Object);
             TestKernel.Bind<ISerializer>().ToMethod(context => mockSerializer.Object).Named("SettingsSerializer");
             TestKernel.Bind<TextWriter>().ToMethod(context => mockStreamWriter.Object);
             TestKernel.Bind<SettingsManager>().ToSelf().InTransientScope()
@@ -70,11 +70,11 @@ namespace DonkeySuite.Tests.DesktopMonitor.Domain.Model.Settings
         {
             // Arrange
             var mockSerializer = new Mock<ISerializer>();
-            var mockFileWrapper = new Mock<IFileWrapper>();
+            var mockFileWrapper = new Mock<IFile>();
             var mockStreamWriter = new Mock<TextWriter>();
             var mockLogger = new Mock<ILog>();
-            var mockSemaphore = new Mock<ISemaphoreWrapper>();
-            var mockEnvironmentWrapper = new Mock<IEnvironmentWrapper>();
+            var mockSemaphore = new Mock<ISemaphore>();
+            var mockEnvironmentWrapper = new Mock<IEnvironment>();
             var settingsRoot = new SettingsRoot();
 
             mockFileWrapper.Setup(x => x.Exists(It.IsAny<string>())).Returns(false);
@@ -84,8 +84,8 @@ namespace DonkeySuite.Tests.DesktopMonitor.Domain.Model.Settings
             mockSerializer.Setup(x => x.Serialize(It.IsAny<TextWriter>(), It.IsAny<object>()))
                 .Throws(new SerializationException());
 
-            TestKernel.Bind<IEnvironmentWrapper>().ToMethod(context => mockEnvironmentWrapper.Object);
-            TestKernel.Bind<IFileWrapper>().ToMethod(context => mockFileWrapper.Object);
+            TestKernel.Bind<IEnvironment>().ToMethod(context => mockEnvironmentWrapper.Object);
+            TestKernel.Bind<IFile>().ToMethod(context => mockFileWrapper.Object);
             TestKernel.Bind<ISerializer>().ToMethod(context => mockSerializer.Object).Named("SettingsSerializer");
             TestKernel.Bind<TextWriter>().ToMethod(context => mockStreamWriter.Object);
             TestKernel.Bind<SettingsRoot>().ToMethod(context => settingsRoot);
@@ -105,12 +105,12 @@ namespace DonkeySuite.Tests.DesktopMonitor.Domain.Model.Settings
         public void SettingsManagerReturnsNullWhenSemaphoreInterrupted()
         {
             // Arrange
-            var mockSemaphore = new Mock<ISemaphoreWrapper>();
+            var mockSemaphore = new Mock<ISemaphore>();
             var mockLogger = new Mock<ILog>();
 
             mockSemaphore.Setup(x => x.WaitOne()).Throws(new AbandonedMutexException());
 
-            TestKernel.Bind<ISemaphoreWrapper>().ToMethod(context => mockSemaphore.Object);
+            TestKernel.Bind<ISemaphore>().ToMethod(context => mockSemaphore.Object);
             TestKernel.Bind<SettingsManager>().ToSelf().InTransientScope()
                 .WithConstructorArgument("log", mockLogger.Object)
                 .WithConstructorArgument("semaphore", mockSemaphore.Object);
@@ -143,18 +143,18 @@ namespace DonkeySuite.Tests.DesktopMonitor.Domain.Model.Settings
         public void SettingsManagerReturnsSameSettingsObjectAfterMultipleCalls() {
             // Arrange
             var mockSerializer = new Mock<ISerializer>();
-            var mockFileWrapper = new Mock<IFileWrapper>();
+            var mockFileWrapper = new Mock<IFile>();
             var mockStreamWriter = new Mock<TextWriter>();
             var mockLogger = new Mock<ILog>();
-            var mockSemaphore = new Mock<ISemaphoreWrapper>();
-            var mockEnvironmentWrapper = new Mock<IEnvironmentWrapper>();
+            var mockSemaphore = new Mock<ISemaphore>();
+            var mockEnvironmentWrapper = new Mock<IEnvironment>();
             var settingsRoot = new SettingsRoot();
 
             mockFileWrapper.Setup(x => x.Exists(It.IsAny<string>())).Returns(false);
             mockEnvironmentWrapper.SetupGet(x => x.IsWindowsPlatform).Returns(true);
 
-            TestKernel.Bind<IEnvironmentWrapper>().ToMethod(context => mockEnvironmentWrapper.Object);
-            TestKernel.Bind<IFileWrapper>().ToMethod(context => mockFileWrapper.Object);
+            TestKernel.Bind<IEnvironment>().ToMethod(context => mockEnvironmentWrapper.Object);
+            TestKernel.Bind<IFile>().ToMethod(context => mockFileWrapper.Object);
             TestKernel.Bind<ISerializer>().ToMethod(context => mockSerializer.Object).Named("SettingsSerializer");
             TestKernel.Bind<TextWriter>().ToMethod(context => mockStreamWriter.Object);
             TestKernel.Bind<SettingsRoot>().ToMethod(context => settingsRoot);
@@ -176,17 +176,17 @@ namespace DonkeySuite.Tests.DesktopMonitor.Domain.Model.Settings
         {
             // Arrange
             var mockSerializer = new Mock<ISerializer>();
-            var mockFileWrapper = new Mock<IFileWrapper>();
+            var mockFileWrapper = new Mock<IFile>();
             var mockStreamWriter = new Mock<TextWriter>();
             var mockLogger = new Mock<ILog>();
-            var mockSemaphore = new Mock<ISemaphoreWrapper>();
-            var mockEnvironmentWrapper = new Mock<IEnvironmentWrapper>();
+            var mockSemaphore = new Mock<ISemaphore>();
+            var mockEnvironmentWrapper = new Mock<IEnvironment>();
             var settingsRoot = new SettingsRoot();
 
             mockEnvironmentWrapper.SetupGet(x => x.IsWindowsPlatform).Returns(true);
 
-            TestKernel.Bind<IEnvironmentWrapper>().ToMethod(context => mockEnvironmentWrapper.Object);
-            TestKernel.Bind<IFileWrapper>().ToMethod(context => mockFileWrapper.Object);
+            TestKernel.Bind<IEnvironment>().ToMethod(context => mockEnvironmentWrapper.Object);
+            TestKernel.Bind<IFile>().ToMethod(context => mockFileWrapper.Object);
             TestKernel.Bind<ISerializer>().ToMethod(context => mockSerializer.Object).Named("SettingsSerializer");
             TestKernel.Bind<TextWriter>().ToMethod(context => mockStreamWriter.Object);
             TestKernel.Bind<SettingsRoot>().ToMethod(context => settingsRoot);
@@ -207,15 +207,15 @@ namespace DonkeySuite.Tests.DesktopMonitor.Domain.Model.Settings
         {
             // Arrange
             var mockSerializer = new Mock<ISerializer>();
-            var mockFileWrapper = new Mock<IFileWrapper>();
+            var mockFileWrapper = new Mock<IFile>();
             var mockLogger = new Mock<ILog>();
-            var mockSemaphore = new Mock<ISemaphoreWrapper>();
-            var mockEnvironmentWrapper = new Mock<IEnvironmentWrapper>();
+            var mockSemaphore = new Mock<ISemaphore>();
+            var mockEnvironmentWrapper = new Mock<IEnvironment>();
 
             mockFileWrapper.Setup(x => x.Exists(It.IsAny<string>())).Returns(true);
 
-            TestKernel.Bind<IEnvironmentWrapper>().ToMethod(context => mockEnvironmentWrapper.Object);
-            TestKernel.Bind<IFileWrapper>().ToMethod(context => mockFileWrapper.Object);
+            TestKernel.Bind<IEnvironment>().ToMethod(context => mockEnvironmentWrapper.Object);
+            TestKernel.Bind<IFile>().ToMethod(context => mockFileWrapper.Object);
             TestKernel.Bind<ISerializer>().ToMethod(context => mockSerializer.Object).Named("SettingsSerializer");
             TestKernel.Bind<SettingsManager>().ToSelf().InTransientScope()
                 .WithConstructorArgument("log", mockLogger.Object)
@@ -236,12 +236,12 @@ namespace DonkeySuite.Tests.DesktopMonitor.Domain.Model.Settings
             var mockSerializer = new Mock<ISerializer>();
             var mockStreamWriter = new Mock<TextWriter>();
             var mockLogger = new Mock<ILog>();
-            var mockSemaphore = new Mock<ISemaphoreWrapper>();
-            var mockEnvironmentWrapper = new Mock<IEnvironmentWrapper>();
+            var mockSemaphore = new Mock<ISemaphore>();
+            var mockEnvironmentWrapper = new Mock<IEnvironment>();
 
             mockSerializer.Setup(x => x.Serialize(mockStreamWriter.Object, It.IsAny<object>()));
 
-            TestKernel.Bind<IEnvironmentWrapper>().ToMethod(context => mockEnvironmentWrapper.Object);
+            TestKernel.Bind<IEnvironment>().ToMethod(context => mockEnvironmentWrapper.Object);
             TestKernel.Bind<ISerializer>().ToMethod(context => mockSerializer.Object).Named("SettingsSerializer");
             TestKernel.Bind<TextWriter>().ToMethod(context => mockStreamWriter.Object);
             TestKernel.Bind<SettingsManager>().ToSelf().InTransientScope()
@@ -259,13 +259,13 @@ namespace DonkeySuite.Tests.DesktopMonitor.Domain.Model.Settings
             // Arrange
             var mockSerializer = new Mock<ISerializer>();
             var mockStreamWriter = new Mock<TextWriter>();
-            var mockEnvironmentWrapper = new Mock<IEnvironmentWrapper>();
+            var mockEnvironmentWrapper = new Mock<IEnvironment>();
             var mockLogger = new Mock<ILog>();
-            var mockSemaphore = new Mock<ISemaphoreWrapper>();
+            var mockSemaphore = new Mock<ISemaphore>();
 
             mockSerializer.Setup(x => x.Serialize(mockStreamWriter.Object, It.IsAny<object>())).Throws(new Exception("test exception"));
 
-            TestKernel.Bind<IEnvironmentWrapper>().ToMethod(context => mockEnvironmentWrapper.Object);
+            TestKernel.Bind<IEnvironment>().ToMethod(context => mockEnvironmentWrapper.Object);
             TestKernel.Bind<ISerializer>().ToMethod(context => mockSerializer.Object).Named("SettingsSerializer");
             TestKernel.Bind<TextWriter>().ToMethod(context => mockStreamWriter.Object);
             TestKernel.Bind<SettingsManager>().ToSelf().InTransientScope()
@@ -281,7 +281,7 @@ namespace DonkeySuite.Tests.DesktopMonitor.Domain.Model.Settings
         public void SettingsManagerSaveHandlesSemaphoreInterruptedGracefully()
         {
             // Arrange
-            var mockSemaphore = new Mock<ISemaphoreWrapper>();
+            var mockSemaphore = new Mock<ISemaphore>();
             var mockLogger = new Mock<ILog>();
 
             mockSemaphore.Setup(x => x.WaitOne()).Throws(new ThreadInterruptedException());
@@ -299,7 +299,7 @@ namespace DonkeySuite.Tests.DesktopMonitor.Domain.Model.Settings
         public void SettingsManagerSaveThrowsAbortedExceptionWhenSerializationFails()
         {
             // Arrange
-            var mockSemaphore = new Mock<ISemaphoreWrapper>();
+            var mockSemaphore = new Mock<ISemaphore>();
             var mockLogger = new Mock<ILog>();
 
             mockSemaphore.Setup(x => x.WaitOne()).Throws(new SerializationException());

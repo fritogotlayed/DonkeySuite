@@ -72,6 +72,10 @@
       <Project>{F284CAB2-54E4-4918-B691-FB5923103225}</Project>
       <Name>DonkeySuite.DesktopMonitor.Domain</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\DonkeySuite.SystemWrappers\DonkeySuite.SystemWrappers.csproj">
+      <Project>{7C5E0314-E847-4088-8614-65D8812FFC9A}</Project>
+      <Name>DonkeySuite.SystemWrappers</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Model\Settings\WatchDirectoryTest.cs" />
