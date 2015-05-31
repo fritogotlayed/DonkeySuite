@@ -2,7 +2,6 @@ using System;
 using System.Threading.Tasks;
 using DonkeySuite.DesktopMonitor.Domain;
 using DonkeySuite.DesktopMonitor.Domain.Model;
-using DonkeySuite.DesktopMonitor.Domain.Model.Requests;
 using DonkeySuite.DesktopMonitor.Domain.Model.Settings;
 using DonkeySuite.DesktopMonitor.Wpf.Repositories;
 using GalaSoft.MvvmLight;
@@ -58,7 +57,7 @@ namespace DonkeySuite.DesktopMonitor.Wpf.ViewModel
                 try
                 {
                     // TODO: Figure out how to make this injected.
-                    var repo = new WatchedFileRepository(session);
+                    var repo = new WatchedFileRepository(session, DependencyManager.Kernel);
                     var mgr = DependencyManager.Kernel.Get<SettingsManager>();
                     var settings = mgr.GetSettings();
                     foreach (var watchDir in settings.Directories)

@@ -1,9 +1,6 @@
-using System;
-using DonkeySuite.DesktopMonitor.Domain;
 using DonkeySuite.DesktopMonitor.Domain.Model.Settings;
-using DonkeySuite.SystemWrappers.Interfaces;
+using MadDonkeySoftware.SystemWrappers;
 using Moq;
-using Ninject;
 using NUnit.Framework;
 
 namespace DonkeySuite.Tests.DesktopMonitor.Domain.Model.Settings
@@ -11,74 +8,91 @@ namespace DonkeySuite.Tests.DesktopMonitor.Domain.Model.Settings
     [TestFixture]
     public class WatchDirectoryTest
     {
-
-        [SetUp]
-        public void SetUp()
+        private class WatchDirectoryTestBundle
         {
-            DependencyManager.Kernel = new StandardKernel();
-        }
+            public Mock<IEnvironment> MockEnvironment { get; private set; }
+            public WatchDirectory WatchDirectory { get; private set; }
 
-        [TearDown]
-        public void TearDown()
-        {
-            GC.Collect();
+            public WatchDirectoryTestBundle()
+            {
+                MockEnvironment = new Mock<IEnvironment>();
+                WatchDirectory = new WatchDirectory(MockEnvironment.Object);
+            }
         }
 
         [Test]
         public void WatchDirectory_ConstructedWithDefaults()
         {
-            // Act
-            var dir = new WatchDirectory();
+            // Arrange & Act
+            var testBundle = new WatchDirectoryTestBundle();
 
             // Assert
-            Assert.AreEqual(null, dir.FileExtensions, "FileExtensions");
-            Assert.AreEqual(null, dir.Path, "Path");
-            Assert.AreEqual(null, dir.SortStrategy, "SortStrategy");
-            Assert.AreEqual(OperationMode.Unknown, dir.Mode, "Mode");
-            Assert.AreEqual(false, dir.IncludeSubDirectories, "IncludeSubDirectories");
+            Assert.AreEqual(null, testBundle.WatchDirectory.FileExtensions, "FileExtensions");
+            Assert.AreEqual(null, testBundle.WatchDirectory.Path, "Path");
+            Assert.AreEqual(null, testBundle.WatchDirectory.SortStrategy, "SortStrategy");
+            Assert.AreEqual(OperationMode.Unknown, testBundle.WatchDirectory.Mode, "Mode");
+            Assert.AreEqual(false, testBundle.WatchDirectory.IncludeSubDirectories, "IncludeSubDirectories");
         }
 
         [Test]
-        public void WatchDirectory_PopulateWithDefaults_ConfiguresObjectProperly()
+        public void WatchDirectory_PopulateWithDefaults_OnWindows_ConfiguresObjectProperly()
         {
             // Arrange
-            var dir = new WatchDirectory();
-            var mockEnvironmentWrapper = new Mock<IEnvironment>();
+            var testBundle = new WatchDirectoryTestBundle();
 
-            mockEnvironmentWrapper.SetupGet(x => x.IsWindowsPlatform).Returns(true);
-            DependencyManager.Kernel.Bind<IEnvironment>().ToMethod(context => mockEnvironmentWrapper.Object);
+            testBundle.MockEnvironment.SetupGet(x => x.IsWindowsPlatform).Returns(true);
 
             // Act
-            dir.PopulateWithDefaults();
+            testBundle.WatchDirectory.PopulateWithDefaults();
 
             // Assert
-            var expectedDirectory = Utilities.IsWindowsPlatform ? "C:\\" : "/";
-            Assert.AreEqual("jpg,jpeg,gif,tiff", dir.FileExtensions, "FileExtensions");
-            Assert.AreEqual(expectedDirectory, dir.Path, "Path");
-            Assert.AreEqual("Simple", dir.SortStrategy, "SortStrategy");
-            Assert.AreEqual(OperationMode.Unknown, dir.Mode, "Mode");
-            Assert.AreEqual(false, dir.IncludeSubDirectories, "IncludeSubDirectories");
+            const string expectedDirectory = "C:\\";
+            Assert.AreEqual("jpg,jpeg,gif,tiff", testBundle.WatchDirectory.FileExtensions, "FileExtensions");
+            Assert.AreEqual(expectedDirectory, testBundle.WatchDirectory.Path, "Path");
+            Assert.AreEqual("Simple", testBundle.WatchDirectory.SortStrategy, "SortStrategy");
+            Assert.AreEqual(OperationMode.Unknown, testBundle.WatchDirectory.Mode, "Mode");
+            Assert.AreEqual(false, testBundle.WatchDirectory.IncludeSubDirectories, "IncludeSubDirectories");
+        }
+
+        [Test]
+        public void WatchDirectory_PopulateWithDefaults_NotOnWindows_ConfiguresObjectProperly()
+        {
+            // Arrange
+            var testBundle = new WatchDirectoryTestBundle();
+
+            testBundle.MockEnvironment.SetupGet(x => x.IsWindowsPlatform).Returns(false);
+
+            // Act
+            testBundle.WatchDirectory.PopulateWithDefaults();
+
+            // Assert
+            const string expectedDirectory = "/";
+            Assert.AreEqual("jpg,jpeg,gif,tiff", testBundle.WatchDirectory.FileExtensions, "FileExtensions");
+            Assert.AreEqual(expectedDirectory, testBundle.WatchDirectory.Path, "Path");
+            Assert.AreEqual("Simple", testBundle.WatchDirectory.SortStrategy, "SortStrategy");
+            Assert.AreEqual(OperationMode.Unknown, testBundle.WatchDirectory.Mode, "Mode");
+            Assert.AreEqual(false, testBundle.WatchDirectory.IncludeSubDirectories, "IncludeSubDirectories");
         }
 
         [Test]
         public void WatchDirectory_ObjectSettersWorkCorrectly()
         {
+            // Arrange
+            var testBunle = new WatchDirectoryTestBundle();
+
             // Act
-            var dir = new WatchDirectory
-            {
-                FileExtensions = "jpg,jpeg",
-                IncludeSubDirectories = true,
-                Mode = OperationMode.SortOnly,
-                Path = "D:\\",
-                SortStrategy = "SortStrategy"
-            };
+            testBunle.WatchDirectory.FileExtensions = "jpg,jpeg";
+            testBunle.WatchDirectory.IncludeSubDirectories = true;
+            testBunle.WatchDirectory.Mode = OperationMode.SortOnly;
+            testBunle.WatchDirectory.Path = "D:\\";
+            testBunle.WatchDirectory.SortStrategy = "SortStrategy";
 
             // Assert
-            Assert.AreEqual("jpg,jpeg", dir.FileExtensions, "FileExtensions");
-            Assert.AreEqual("D:\\", dir.Path, "Path");
-            Assert.AreEqual("SortStrategy", dir.SortStrategy, "SortStrategy");
-            Assert.AreEqual(OperationMode.SortOnly, dir.Mode, "Mode");
-            Assert.AreEqual(true, dir.IncludeSubDirectories, "IncludeSubDirectories");
+            Assert.AreEqual("jpg,jpeg", testBunle.WatchDirectory.FileExtensions, "FileExtensions");
+            Assert.AreEqual("D:\\", testBunle.WatchDirectory.Path, "Path");
+            Assert.AreEqual("SortStrategy", testBunle.WatchDirectory.SortStrategy, "SortStrategy");
+            Assert.AreEqual(OperationMode.SortOnly, testBunle.WatchDirectory.Mode, "Mode");
+            Assert.AreEqual(true, testBunle.WatchDirectory.IncludeSubDirectories, "IncludeSubDirectories");
         }
     }
 }

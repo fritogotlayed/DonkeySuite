@@ -5,8 +5,9 @@ using NUnit.Framework;
 
 namespace DonkeySuite.Tests.DesktopMonitor.Domain
 {
+    /*
     [TestFixture]
-    public class TestBase
+    public abstract class TestBase
     {
         protected IKernel TestKernel { get; set; }
 
@@ -24,4 +25,5 @@ namespace DonkeySuite.Tests.DesktopMonitor.Domain
             GC.Collect();
         }
     }
+     */
 }

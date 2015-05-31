@@ -2,64 +2,56 @@ using System;
 using System.IO;
 using System.Runtime.Serialization;
 using System.Threading;
-using DonkeySuite.DesktopMonitor.Domain;
+using DonkeySuite.DesktopMonitor.Domain.Model;
+using DonkeySuite.DesktopMonitor.Domain.Model.Providers;
 using DonkeySuite.DesktopMonitor.Domain.Model.Settings;
-using DonkeySuite.SystemWrappers.Interfaces;
 using log4net;
+using MadDonkeySoftware.SystemWrappers;
+using MadDonkeySoftware.SystemWrappers.IO;
+using MadDonkeySoftware.SystemWrappers.Threading;
+using MadDonkeySoftware.SystemWrappers.Xml.Serialization;
 using Moq;
-using Ninject;
 using NUnit.Framework;
 
 namespace DonkeySuite.Tests.DesktopMonitor.Domain.Model.Settings
 {
     [TestFixture]
-    public class SettingsManagerTest : TestBase
+    public class SettingsManagerTest
     {
-        [Test]
-        public void SettingsManagerInstanceIsNotNull()
+        private class SettingsManagerTestBundle
         {
-            DependencyManager.Kernel = null;
-            Assert.IsNotNull(DependencyManager.Kernel.Get<SettingsManager>());
-        }
+            public Mock<ILog> MockLog { get; private set; }
+            public Mock<ISemaphore> MockSemaphore { get; private set; }
+            public Mock<IFile> MockFile { get; private set; }
+            public Mock<IXmlSerializer> MockSerializer { get; private set; }
+            public Mock<IEnvironmentUtility> MockEnvironmentUtility { get; private set; }
+            public Mock<IServiceLocator> MockServiceLocator { get; private set; }
+            public SettingsManager SettingsManager { get; private set; }
 
-        [Test]
-        public void SettingsManagerMultipleCallsToInstanceReturnsTheSameObject()
-        {
-            // Arrange
-            DependencyManager.Kernel = null;
-            // Act
-            var m1 = DependencyManager.Kernel.Get<SettingsManager>();
-            var m2 = DependencyManager.Kernel.Get<SettingsManager>();
+            public SettingsManagerTestBundle()
+            {
+                MockLog = new Mock<ILog>();
+                MockSemaphore = new Mock<ISemaphore>();
+                MockFile = new Mock<IFile>();
+                MockSerializer = new Mock<IXmlSerializer>();
+                MockEnvironmentUtility = new Mock<IEnvironmentUtility>();
+                MockServiceLocator = new Mock<IServiceLocator>();
 
-            // Assert
-            Assert.AreSame(m1, m2);
+                SettingsManager = new SettingsManager(MockLog.Object, MockSemaphore.Object, MockFile.Object, MockSerializer.Object, MockEnvironmentUtility.Object, MockServiceLocator.Object);
+            }
         }
 
         [Test]
         public void SettingsManagerReturnsSettingsObject()
         {
             // Arrange
-            var mockSerializer = new Mock<ISerializer>();
-            var mockFileWrapper = new Mock<IFile>();
-            var mockStreamWriter = new Mock<TextWriter>();
-            var mockLogger = new Mock<ILog>();
-            var mockSemaphore = new Mock<ISemaphore>();
-            var mockEnvironmentWrapper = new Mock<IEnvironment>();
+            var testBundle = new SettingsManagerTestBundle();
+            var mockSettingsRoot = new Mock<SettingsRoot>();
 
-            mockFileWrapper.Setup(x => x.Exists(It.IsAny<string>())).Returns(false);
-            mockFileWrapper.Setup(x => x.Open(It.IsAny<string>(), FileMode.Open)).Returns((FileStream)null);
-            mockEnvironmentWrapper.SetupGet(x => x.IsWindowsPlatform).Returns(true);
-
-            TestKernel.Bind<IEnvironment>().ToMethod(context => mockEnvironmentWrapper.Object);
-            TestKernel.Bind<IFile>().ToMethod(context => mockFileWrapper.Object);
-            TestKernel.Bind<ISerializer>().ToMethod(context => mockSerializer.Object).Named("SettingsSerializer");
-            TestKernel.Bind<TextWriter>().ToMethod(context => mockStreamWriter.Object);
-            TestKernel.Bind<SettingsManager>().ToSelf().InTransientScope()
-                .WithConstructorArgument("log", mockLogger.Object)
-                .WithConstructorArgument("semaphore", mockSemaphore.Object);
+            testBundle.MockServiceLocator.Setup(x => x.ProvideDefaultSettingsRoot()).Returns(mockSettingsRoot.Object);
 
             // Act
-            var settings = DependencyManager.Kernel.Get<SettingsManager>().GetSettings();
+            var settings = testBundle.SettingsManager.GetSettings();
 
             // Assert
             Assert.IsNotNull(settings);
@@ -69,55 +61,34 @@ namespace DonkeySuite.Tests.DesktopMonitor.Domain.Model.Settings
         public void SettingsManagerReturnsNewSettingsObjectAfterSaveFails()
         {
             // Arrange
-            var mockSerializer = new Mock<ISerializer>();
-            var mockFileWrapper = new Mock<IFile>();
-            var mockStreamWriter = new Mock<TextWriter>();
-            var mockLogger = new Mock<ILog>();
-            var mockSemaphore = new Mock<ISemaphore>();
-            var mockEnvironmentWrapper = new Mock<IEnvironment>();
-            var settingsRoot = new SettingsRoot();
+            var mockSettingsRoot = new Mock<SettingsRoot>();
+            var testBundle = new SettingsManagerTestBundle();
 
-            mockFileWrapper.Setup(x => x.Exists(It.IsAny<string>())).Returns(false);
-            mockFileWrapper.Setup(x => x.Open(It.IsAny<string>(), FileMode.Open)).Returns((FileStream)null);
-            mockEnvironmentWrapper.SetupGet(x => x.IsWindowsPlatform).Returns(true);
+            testBundle.MockServiceLocator.Setup(x => x.ProvideDefaultSettingsRoot()).Returns(mockSettingsRoot.Object);
+            testBundle.MockFile.Setup(x => x.Exists(It.IsAny<string>())).Returns(false);
+            testBundle.MockFile.Setup(x => x.Open(It.IsAny<string>(), FileMode.Open)).Returns((FileStream)null);
+            testBundle.MockEnvironmentUtility.SetupGet(x => x.IsWindowsPlatform).Returns(true);
 
-            mockSerializer.Setup(x => x.Serialize(It.IsAny<TextWriter>(), It.IsAny<object>()))
+            testBundle.MockSerializer.Setup(x => x.Serialize(It.IsAny<TextWriter>(), It.IsAny<object>()))
                 .Throws(new SerializationException());
 
-            TestKernel.Bind<IEnvironment>().ToMethod(context => mockEnvironmentWrapper.Object);
-            TestKernel.Bind<IFile>().ToMethod(context => mockFileWrapper.Object);
-            TestKernel.Bind<ISerializer>().ToMethod(context => mockSerializer.Object).Named("SettingsSerializer");
-            TestKernel.Bind<TextWriter>().ToMethod(context => mockStreamWriter.Object);
-            TestKernel.Bind<SettingsRoot>().ToMethod(context => settingsRoot);
-            TestKernel.Bind<SettingsManager>().ToSelf().InTransientScope()
-                .WithConstructorArgument("log", mockLogger.Object)
-                .WithConstructorArgument("semaphore", mockSemaphore.Object);
-
             // Act
-            var settingManager = DependencyManager.Kernel.Get<SettingsManager>();
-            var settings = settingManager.GetSettings();
+            var settings = testBundle.SettingsManager.GetSettings();
 
             // Assert
-            Assert.AreSame(settings, settingsRoot);
+            Assert.AreSame(mockSettingsRoot.Object, settings);
         }
 
         [Test]
         public void SettingsManagerReturnsNullWhenSemaphoreInterrupted()
         {
             // Arrange
-            var mockSemaphore = new Mock<ISemaphore>();
-            var mockLogger = new Mock<ILog>();
+            var testBundle = new SettingsManagerTestBundle();
 
-            mockSemaphore.Setup(x => x.WaitOne()).Throws(new AbandonedMutexException());
-
-            TestKernel.Bind<ISemaphore>().ToMethod(context => mockSemaphore.Object);
-            TestKernel.Bind<SettingsManager>().ToSelf().InTransientScope()
-                .WithConstructorArgument("log", mockLogger.Object)
-                .WithConstructorArgument("semaphore", mockSemaphore.Object);
+            testBundle.MockSemaphore.Setup(x => x.WaitOne()).Throws(new AbandonedMutexException());
 
             // Act
-            var settingManager = DependencyManager.Kernel.Get<SettingsManager>();
-            var settings = settingManager.GetSettings();
+            var settings = testBundle.SettingsManager.GetSettings();
 
             // Assert
             Assert.IsNull(settings);
@@ -129,7 +100,7 @@ namespace DonkeySuite.Tests.DesktopMonitor.Domain.Model.Settings
             // Act
             try
             {
-                var settingManager = new SettingsManager(null, null);
+                var settingManager = new SettingsManager(null, null, null, null, null, null);
                 settingManager.GetSettings();
             }
             catch (Exception ex)
@@ -140,34 +111,21 @@ namespace DonkeySuite.Tests.DesktopMonitor.Domain.Model.Settings
         }
 
         [Test]
-        public void SettingsManagerReturnsSameSettingsObjectAfterMultipleCalls() {
+        public void SettingsManagerReturnsSameSettingsObjectAfterMultipleCalls()
+        {
             // Arrange
-            var mockSerializer = new Mock<ISerializer>();
-            var mockFileWrapper = new Mock<IFile>();
-            var mockStreamWriter = new Mock<TextWriter>();
-            var mockLogger = new Mock<ILog>();
-            var mockSemaphore = new Mock<ISemaphore>();
-            var mockEnvironmentWrapper = new Mock<IEnvironment>();
-            var settingsRoot = new SettingsRoot();
+            var mockSettingsRoot = new Mock<SettingsRoot>();
+            var testBundle = new SettingsManagerTestBundle();
 
-            mockFileWrapper.Setup(x => x.Exists(It.IsAny<string>())).Returns(false);
-            mockEnvironmentWrapper.SetupGet(x => x.IsWindowsPlatform).Returns(true);
-
-            TestKernel.Bind<IEnvironment>().ToMethod(context => mockEnvironmentWrapper.Object);
-            TestKernel.Bind<IFile>().ToMethod(context => mockFileWrapper.Object);
-            TestKernel.Bind<ISerializer>().ToMethod(context => mockSerializer.Object).Named("SettingsSerializer");
-            TestKernel.Bind<TextWriter>().ToMethod(context => mockStreamWriter.Object);
-            TestKernel.Bind<SettingsRoot>().ToMethod(context => settingsRoot);
-            TestKernel.Bind<SettingsManager>().ToSelf().InTransientScope()
-                .WithConstructorArgument("log", mockLogger.Object)
-                .WithConstructorArgument("semaphore", mockSemaphore.Object);
+            testBundle.MockServiceLocator.Setup(x => x.ProvideDefaultSettingsRoot()).Returns(mockSettingsRoot.Object);
 
             // Act
-            var settingManager = DependencyManager.Kernel.Get<SettingsManager>();
-            var s1 = settingManager.GetSettings();
-            var s2 = settingManager.GetSettings();
+            var s1 = testBundle.SettingsManager.GetSettings();
+            var s2 = testBundle.SettingsManager.GetSettings();
 
             // Assert
+            Assert.AreSame(mockSettingsRoot.Object, s1);
+            Assert.AreSame(mockSettingsRoot.Object, s2);
             Assert.AreSame(s1, s2);
         }
 
@@ -175,142 +133,114 @@ namespace DonkeySuite.Tests.DesktopMonitor.Domain.Model.Settings
         public void SettingsManagerReturnsSavedSettingsObject()
         {
             // Arrange
-            var mockSerializer = new Mock<ISerializer>();
-            var mockFileWrapper = new Mock<IFile>();
-            var mockStreamWriter = new Mock<TextWriter>();
-            var mockLogger = new Mock<ILog>();
-            var mockSemaphore = new Mock<ISemaphore>();
-            var mockEnvironmentWrapper = new Mock<IEnvironment>();
-            var settingsRoot = new SettingsRoot();
+            var mockSettingsRoot = new Mock<SettingsRoot>();
+            var testBundle = new SettingsManagerTestBundle();
 
-            mockEnvironmentWrapper.SetupGet(x => x.IsWindowsPlatform).Returns(true);
-
-            TestKernel.Bind<IEnvironment>().ToMethod(context => mockEnvironmentWrapper.Object);
-            TestKernel.Bind<IFile>().ToMethod(context => mockFileWrapper.Object);
-            TestKernel.Bind<ISerializer>().ToMethod(context => mockSerializer.Object).Named("SettingsSerializer");
-            TestKernel.Bind<TextWriter>().ToMethod(context => mockStreamWriter.Object);
-            TestKernel.Bind<SettingsRoot>().ToMethod(context => settingsRoot);
-            TestKernel.Bind<SettingsManager>().ToSelf().InTransientScope()
-                .WithConstructorArgument("log", mockLogger.Object)
-                .WithConstructorArgument("semaphore", mockSemaphore.Object);
+            testBundle.MockEnvironmentUtility.SetupGet(x => x.IsWindowsPlatform).Returns(true);
+            testBundle.MockServiceLocator.Setup(x => x.ProvideDefaultSettingsRoot()).Returns(mockSettingsRoot.Object);
 
             // Act
-            var settingManager = DependencyManager.Kernel.Get<SettingsManager>();
-            var settings = settingManager.GetSettings();
+            var settings = testBundle.SettingsManager.GetSettings();
 
             // Assert
-            Assert.AreSame(settingsRoot, settings);
+            Assert.AreSame(mockSettingsRoot.Object, settings);
+            testBundle.MockSerializer.Verify(x => x.Serialize(It.IsAny<TextWriter>(), It.IsAny<object>()), Times.Once);
         }
 
         [Test]
         public void SettingsManagerReturnsNullWhenFailureToReadSettingsFile()
         {
             // Arrange
-            var mockSerializer = new Mock<ISerializer>();
-            var mockFileWrapper = new Mock<IFile>();
-            var mockLogger = new Mock<ILog>();
-            var mockSemaphore = new Mock<ISemaphore>();
-            var mockEnvironmentWrapper = new Mock<IEnvironment>();
+            var testBundle = new SettingsManagerTestBundle();
 
-            mockFileWrapper.Setup(x => x.Exists(It.IsAny<string>())).Returns(true);
-
-            TestKernel.Bind<IEnvironment>().ToMethod(context => mockEnvironmentWrapper.Object);
-            TestKernel.Bind<IFile>().ToMethod(context => mockFileWrapper.Object);
-            TestKernel.Bind<ISerializer>().ToMethod(context => mockSerializer.Object).Named("SettingsSerializer");
-            TestKernel.Bind<SettingsManager>().ToSelf().InTransientScope()
-                .WithConstructorArgument("log", mockLogger.Object)
-                .WithConstructorArgument("semaphore", mockSemaphore.Object);
+            testBundle.MockFile.Setup(x => x.Exists(It.IsAny<string>())).Returns(true);
+            testBundle.MockEnvironmentUtility.SetupGet(x => x.IsWindowsPlatform).Returns(true);
+            testBundle.MockSerializer.Setup(x => x.Deserialize(It.IsAny<Stream>())).Throws(new SerializationException());
 
             // Act
-            var settingManager = DependencyManager.Kernel.Get<SettingsManager>();
-            var settings = settingManager.GetSettings();
+            var settings = testBundle.SettingsManager.GetSettings();
 
             // Assert
             Assert.IsNull(settings);
+            testBundle.MockLog.Verify(x => x.Error("Error opening settings file.", It.IsAny<Exception>()), Times.Once);
         }
 
         [Test]
         public void SettingsManagerSaveWritesToSerializer()
         {
             // Arrange
-            var mockSerializer = new Mock<ISerializer>();
-            var mockStreamWriter = new Mock<TextWriter>();
-            var mockLogger = new Mock<ILog>();
-            var mockSemaphore = new Mock<ISemaphore>();
-            var mockEnvironmentWrapper = new Mock<IEnvironment>();
-
-            mockSerializer.Setup(x => x.Serialize(mockStreamWriter.Object, It.IsAny<object>()));
-
-            TestKernel.Bind<IEnvironment>().ToMethod(context => mockEnvironmentWrapper.Object);
-            TestKernel.Bind<ISerializer>().ToMethod(context => mockSerializer.Object).Named("SettingsSerializer");
-            TestKernel.Bind<TextWriter>().ToMethod(context => mockStreamWriter.Object);
-            TestKernel.Bind<SettingsManager>().ToSelf().InTransientScope()
-                .WithConstructorArgument("log", mockLogger.Object)
-                .WithConstructorArgument("semaphore", mockSemaphore.Object);
+            var testBundle = new SettingsManagerTestBundle();
 
             // Act
-            var settingManager = DependencyManager.Kernel.Get<SettingsManager>();
-            settingManager.SaveSettings();
+            testBundle.SettingsManager.SaveSettings();
+
+            // Assert
+            testBundle.MockSerializer.Verify(x => x.Serialize(It.IsAny<TextWriter>(), It.IsAny<object>()), Times.Once);
         }
 
-        [Test] [ExpectedException(typeof(Exception))]
+        [Test]
         public void SettingsManagerSaveRethrowsException()
         {
             // Arrange
-            var mockSerializer = new Mock<ISerializer>();
-            var mockStreamWriter = new Mock<TextWriter>();
-            var mockEnvironmentWrapper = new Mock<IEnvironment>();
-            var mockLogger = new Mock<ILog>();
-            var mockSemaphore = new Mock<ISemaphore>();
+            var testBundle = new SettingsManagerTestBundle();
+            var testException = new Exception("test exception");
+            Exception thrownException = null;
 
-            mockSerializer.Setup(x => x.Serialize(mockStreamWriter.Object, It.IsAny<object>())).Throws(new Exception("test exception"));
-
-            TestKernel.Bind<IEnvironment>().ToMethod(context => mockEnvironmentWrapper.Object);
-            TestKernel.Bind<ISerializer>().ToMethod(context => mockSerializer.Object).Named("SettingsSerializer");
-            TestKernel.Bind<TextWriter>().ToMethod(context => mockStreamWriter.Object);
-            TestKernel.Bind<SettingsManager>().ToSelf().InTransientScope()
-                .WithConstructorArgument("log", mockLogger.Object)
-                .WithConstructorArgument("semaphore", mockSemaphore.Object);
+            testBundle.MockSerializer.Setup(x => x.Serialize(It.IsAny<TextWriter>(), It.IsAny<object>())).Throws(testException);
 
             // Act
-            var settingManager = DependencyManager.Kernel.Get<SettingsManager>();
-            settingManager.SaveSettings();
+            try
+            {
+                testBundle.SettingsManager.SaveSettings();
+            }
+            catch (Exception ex)
+            {
+                thrownException = ex;
+            }
+
+            // Assert
+            testBundle.MockSerializer.Verify(x => x.Serialize(It.IsAny<TextWriter>(), It.IsAny<object>()), Times.Once);
+            Assert.AreEqual(testException, thrownException);
         }
 
         [Test]
         public void SettingsManagerSaveHandlesSemaphoreInterruptedGracefully()
         {
             // Arrange
-            var mockSemaphore = new Mock<ISemaphore>();
-            var mockLogger = new Mock<ILog>();
+            var testBundle = new SettingsManagerTestBundle();
 
-            mockSemaphore.Setup(x => x.WaitOne()).Throws(new ThreadInterruptedException());
-
-            TestKernel.Bind<SettingsManager>().ToSelf().InTransientScope()
-                .WithConstructorArgument("log", mockLogger.Object)
-                .WithConstructorArgument("semaphore", mockSemaphore.Object);
+            testBundle.MockSemaphore.Setup(x => x.WaitOne()).Throws(new ThreadInterruptedException());
 
             // Act
-            var settingManager = DependencyManager.Kernel.Get<SettingsManager>();
-            settingManager.SaveSettings();
+            testBundle.SettingsManager.SaveSettings();
+
+            // Assert
+            testBundle.MockSemaphore.Verify(x => x.WaitOne(), Times.Once);
         }
 
-        [Test] [ExpectedException(typeof(IOException))]
-        public void SettingsManagerSaveThrowsAbortedExceptionWhenSerializationFails()
+        [Test]
+        public void SettingsManagerSaveThrowsIOExceptionWhenSerializationFails()
         {
             // Arrange
-            var mockSemaphore = new Mock<ISemaphore>();
-            var mockLogger = new Mock<ILog>();
+            var testException = new SerializationException();
+            var testBundle = new SettingsManagerTestBundle();
+            IOException thrownException = null;
 
-            mockSemaphore.Setup(x => x.WaitOne()).Throws(new SerializationException());
-
-            TestKernel.Bind<SettingsManager>().ToSelf().InTransientScope()
-                .WithConstructorArgument("log", mockLogger.Object)
-                .WithConstructorArgument("semaphore", mockSemaphore.Object);
+            testBundle.MockSemaphore.Setup(x => x.WaitOne()).Throws(testException);
 
             // Act
-            var settingManager = DependencyManager.Kernel.Get<SettingsManager>();
-            settingManager.SaveSettings();
+            try
+            {
+                testBundle.SettingsManager.SaveSettings();
+            }
+            catch (IOException ex)
+            {
+                thrownException = ex;
+            }
+
+            // Assert
+            testBundle.MockSemaphore.Verify(x => x.WaitOne(), Times.Once);
+            Assert.IsNotNull(thrownException);
         }
     }
 }

@@ -1,10 +1,8 @@
 using System;
 using System.IO;
 using System.Net;
-using DonkeySuite.DesktopMonitor.Domain;
 using DonkeySuite.DesktopMonitor.Domain.Model.Requests;
 using Moq;
-using Ninject;
 using NUnit.Framework;
 
 namespace DonkeySuite.Tests.DesktopMonitor.Domain.Model.Requests
@@ -12,19 +10,19 @@ namespace DonkeySuite.Tests.DesktopMonitor.Domain.Model.Requests
     [TestFixture]
     public class BaseRequestTests
     {
-        private IKernel _testKernel;
-
-        [SetUp]
-        public void SetUp()
+        private class BaseRequestTestBundle
         {
-            _testKernel = new StandardKernel();
-            DependencyManager.Kernel = _testKernel;
+            public BaseRequest BaseRequest { get; private set; }
+
+            public BaseRequestTestBundle()
+            {
+                BaseRequest = new AddImageRequest {FileBytes = new byte[] {1, 2, 3}, FileName = "Test.foo", RequestUrl = "http://google.com/"};
+            }
         }
 
         [TearDown]
         public void TearDown()
         {
-            _testKernel.Dispose();
             GC.Collect();
         }
 
@@ -32,9 +30,9 @@ namespace DonkeySuite.Tests.DesktopMonitor.Domain.Model.Requests
         public void BaseRequest_Post_SuccessfulReturnsTrue()
         {
             // Arrange
+            var testBundle = new BaseRequestTestBundle();
             var mockWebRequest = new Mock<WebRequest>(MockBehavior.Strict);
             var mockResponse = new Mock<HttpWebResponse>(MockBehavior.Strict);
-            var request = new AddImageRequest {FileBytes = new byte[] {1, 2, 3}, FileName = "Test.foo", RequestUrl = "http://google.com/"};
 
             mockWebRequest.SetupSet(x => x.Method = "POST");
             mockWebRequest.SetupSet(x => x.ContentType = "application/x-www-form-urlencoded");
@@ -48,7 +46,7 @@ namespace DonkeySuite.Tests.DesktopMonitor.Domain.Model.Requests
             mockResponse.Setup(x => x.GetResponseStream()).Returns(new MemoryStream());
 
             // Act
-            var result = request.Post();
+            var result = testBundle.BaseRequest.Post();
 
             // Assert
             Assert.AreEqual(true, result);
@@ -58,9 +56,9 @@ namespace DonkeySuite.Tests.DesktopMonitor.Domain.Model.Requests
         public void BaseRequest_Post_NotSuccessfulReturnsFalse()
         {
             // Arrange
+            var testBundle = new BaseRequestTestBundle();
             var mockWebRequest = new Mock<WebRequest>(MockBehavior.Strict);
             var mockResponse = new Mock<HttpWebResponse>(MockBehavior.Strict);
-            var request = new AddImageRequest {FileBytes = new byte[] {1, 2, 3}, FileName = "Test.foo", RequestUrl = "http://google.com/"};
 
             mockWebRequest.SetupSet(x => x.Method = "POST");
             mockWebRequest.SetupSet(x => x.ContentType = "application/x-www-form-urlencoded");
@@ -74,7 +72,7 @@ namespace DonkeySuite.Tests.DesktopMonitor.Domain.Model.Requests
             mockResponse.Setup(x => x.GetResponseStream()).Returns(new MemoryStream());
 
             // Act
-            var result = request.Post();
+            var result = testBundle.BaseRequest.Post();
 
             // Assert
             Assert.AreEqual(false, result);

@@ -1,9 +1,8 @@
 using System;
 using DonkeySuite.DesktopMonitor.Domain;
+using DonkeySuite.DesktopMonitor.Domain.Model.Providers;
 using DonkeySuite.DesktopMonitor.Domain.Model.Settings;
-using DonkeySuite.SystemWrappers.Interfaces;
 using Moq;
-using Ninject;
 using NUnit.Framework;
 
 namespace DonkeySuite.Tests.DesktopMonitor.Domain.Model.Settings
@@ -11,10 +10,16 @@ namespace DonkeySuite.Tests.DesktopMonitor.Domain.Model.Settings
     [TestFixture]
     public class SettingsRootTest
     {
-        [SetUp]
-        public void SetUp()
+        private class SettingsRootTestBundle
         {
-            DependencyManager.Kernel = new StandardKernel();
+            public Mock<IServiceLocator> MockServiceLocator { get; private set; }
+            public SettingsRoot SettingsRoot { get; private set; }
+
+            public SettingsRootTestBundle()
+            {
+                MockServiceLocator = new Mock<IServiceLocator>();
+                SettingsRoot = new SettingsRoot(MockServiceLocator.Object);
+            }
         }
 
         [TearDown]
@@ -27,45 +32,48 @@ namespace DonkeySuite.Tests.DesktopMonitor.Domain.Model.Settings
         public void SettingsInitializedNull()
         {
             // Act
-            var settings = new SettingsRoot();
+            var testBundle = new SettingsRootTestBundle();
 
             // Assert
-            Assert.AreEqual(null, settings.ImageServer);
-            Assert.AreEqual(null, settings.Directories);
+            Assert.IsNull(testBundle.SettingsRoot.ImageServer);
+            Assert.IsNull(testBundle.SettingsRoot.Directories);
         }
 
         [Test]
         public void SettingsConfiguredProperly()
         {
             // Arrange
-            var settings = new SettingsRoot();
-            var mockEnvironmentWrapper = new Mock<IEnvironment>();
+            var testBundle = new SettingsRootTestBundle();
+            var mockImageServer = new Mock<ImageServer>();
+            var mockWatchDirectories = new Mock<WatchDirectories>();
 
-            DependencyManager.Kernel.Bind<IEnvironment>().ToMethod(context => mockEnvironmentWrapper.Object);
+            testBundle.MockServiceLocator.Setup(x => x.ProvideDefaultImageServer()).Returns(mockImageServer.Object);
+            testBundle.MockServiceLocator.Setup(x => x.ProvideDefaultWatchDirectories()).Returns(mockWatchDirectories.Object);
 
             // Act
-            settings.PopulateWithDefaults();
+            testBundle.SettingsRoot.PopulateWithDefaults();
 
             // Assert
-            Assert.IsNotNull(settings.ImageServer);
-            Assert.IsNotNull(settings.Directories);
+            Assert.IsNotNull(testBundle.SettingsRoot.ImageServer);
+            Assert.IsNotNull(testBundle.SettingsRoot.Directories);
         }
 
         [Test]
         public void SettingsSetsWorkCorrectly()
         {
             // Arrange
-            var settings = new SettingsRoot();
-            var server = new ImageServer();
-            var directories = new WatchDirectories();
+            var testBundle = new SettingsRootTestBundle();
+
+            var server = new Mock<ImageServer>();
+            var directories = new Mock<WatchDirectories>();
 
             // Act
-            settings.ImageServer = server;
-            settings.Directories = directories;
+            testBundle.SettingsRoot.ImageServer = server.Object;
+            testBundle.SettingsRoot.Directories = directories.Object;
 
             // Assert
-            Assert.AreSame(server, settings.ImageServer);
-            Assert.AreSame(directories, settings.Directories);
+            Assert.AreSame(server.Object, testBundle.SettingsRoot.ImageServer);
+            Assert.AreSame(directories.Object, testBundle.SettingsRoot.Directories);
         }
     }
 }

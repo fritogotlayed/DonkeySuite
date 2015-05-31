@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Text;
@@ -46,23 +47,23 @@ namespace DonkeySuite.DesktopMonitor.Domain.Model.Requests
                 }
 
                 // Get the response and update the status
-                Log.InfoFormat("Performing post to \"{0}\".", RequestUrl);
+                Log.DebugFormat("Performing post to \"{0}\".", RequestUrl);
                 var response = (HttpWebResponse) request.GetResponse();
                 ResponseStatus = response.StatusDescription;
-                Log.InfoFormat("Received response with code [{0}].", response.StatusCode);
+                Log.DebugFormat("Received response with code [{0}].", response.StatusCode);
 
                 // Pull the response data out and place it into the corresponding property.
                 using (var responseStream = response.GetResponseStream())
                 {
                     if (responseStream != null)
                     {
-                        Log.InfoFormat("Reading response data for last request.");
+                        Log.DebugFormat("Reading response data for last request.");
                         var reader = new StreamReader(responseStream);
                         ResponseData = reader.ReadToEnd();
                     }
                     else
                     {
-                        Log.InfoFormat("Response data is null for last request. Bypassing parsing.");
+                        Log.DebugFormat("Response data is null for last request. Bypassing parsing.");
                     }
                 }
 
@@ -70,9 +71,17 @@ namespace DonkeySuite.DesktopMonitor.Domain.Model.Requests
             }
             catch (WebException ex)
             {
-                Log.Error("Failed posting to server.", ex);
+                Log.Error(string.Format("Failed posting to server.{0}{1}", Environment.NewLine, this), ex);
                 return false;
             }
+        }
+
+        public override string ToString()
+        {
+            var buffer = new StringBuilder();
+            buffer.AppendLine(string.Format("Type : {0}", GetType()));
+            buffer.AppendLine(string.Format("RequestUrl : {0}", RequestUrl));
+            return buffer.ToString();
         }
 
         protected abstract void PopulateRequestParameters(Dictionary<string, string> parameters);

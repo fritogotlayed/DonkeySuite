@@ -2,31 +2,34 @@
 using System.IO;
 using System.Runtime.Serialization;
 using System.Threading;
-using DonkeySuite.SystemWrappers.Interfaces;
+using DonkeySuite.DesktopMonitor.Domain.Model.Providers;
 using log4net;
-using Ninject;
-using Ninject.Parameters;
+using MadDonkeySoftware.SystemWrappers.IO;
+using MadDonkeySoftware.SystemWrappers.Threading;
+using MadDonkeySoftware.SystemWrappers.Xml.Serialization;
 
 namespace DonkeySuite.DesktopMonitor.Domain.Model.Settings
 {
     public class SettingsManager
     {
         private readonly ILog _log;
-        private const string FileName = "settings.xml";
         private readonly ISemaphore _available;
+        private readonly IFile _file;
+        private readonly IXmlSerializer _serializer;
+        private readonly IEnvironmentUtility _environmentUtility;
+        private readonly IServiceLocator _serviceLocator;
+        private const string FileName = "settings.xml";
         private SettingsRoot _settingsRoot;
 
-        public SettingsManager(ILog log, ISemaphore semaphore)
+        public SettingsManager(ILog log, ISemaphore semaphore, IFile file, IXmlSerializer serializer, IEnvironmentUtility environmentUtility, IServiceLocator serviceLocator)
         {
-            // TODO: Get rid of the constructor injection
+            // TODO: Dependency injection feels like it is bloating the constructor. Might be time to re-address the responsibility of this classes methods.
             _log = log;
             _available = semaphore;
-        }
-
-        // NOTE: Not sure I want to do this everywhere. Just a thing to try for now.
-        private IKernel Kernel
-        {
-            get { return DependencyManager.Kernel; }
+            _file = file;
+            _serializer = serializer;
+            _environmentUtility = environmentUtility;
+            _serviceLocator = serviceLocator;
         }
 
         public SettingsRoot GetSettings()
@@ -50,20 +53,17 @@ namespace DonkeySuite.DesktopMonitor.Domain.Model.Settings
                     return _settingsRoot;
                 }
 
-                var serializer = Kernel.Get<ISerializer>("SettingsSerializer");
-
                 var path = GetSettingsFilePath();
-                if (!Kernel.Get<IFile>().Exists(path))
+                if (!_file.Exists(path))
                 {
                     _log.Warn(string.Format("Settings file \"{0}\" does not exist. Populating with defaults.", path));
-                    _settingsRoot = DependencyManager.Kernel.Get<SettingsRoot>();
-                    _settingsRoot.PopulateWithDefaults();
+                    _settingsRoot = _serviceLocator.ProvideDefaultSettingsRoot();
 
                     try
                     {
-                        using (var writer = Kernel.Get<TextWriter>(new ConstructorArgument("path", path)))
+                        using (var writer = _serviceLocator.ProvideTextWriter(path))
                         {
-                            serializer.Serialize(writer, _settingsRoot);
+                            _serializer.Serialize(writer, _settingsRoot);
                         }
                     }
                     catch (SerializationException e)
@@ -77,9 +77,9 @@ namespace DonkeySuite.DesktopMonitor.Domain.Model.Settings
 
                     try
                     {
-                        using (var fileStream = Kernel.Get<IFile>().Open(path, FileMode.Open))
+                        using (var fileStream = _file.Open(path, FileMode.Open))
                         {
-                            _settingsRoot = (SettingsRoot) serializer.Deserialize(fileStream);
+                            _settingsRoot = (SettingsRoot) _serializer.Deserialize(fileStream);
                         }
                     }
                     catch (SerializationException e)
@@ -107,10 +107,9 @@ namespace DonkeySuite.DesktopMonitor.Domain.Model.Settings
                 _available.WaitOne();
 
                 var path = GetSettingsFilePath();
-                var serializer = DependencyManager.Kernel.Get<ISerializer>();
-                using (var writer = Kernel.Get<TextWriter>(new ConstructorArgument("path", path)))
+                using (var writer = _serviceLocator.ProvideTextWriter(path))
                 {
-                    serializer.Serialize(writer, _settingsRoot);
+                    _serializer.Serialize(writer, _settingsRoot);
                 }
             }
             catch (ThreadInterruptedException e)
@@ -124,7 +123,7 @@ namespace DonkeySuite.DesktopMonitor.Domain.Model.Settings
             }
             catch (Exception e)
             {
-                _log.Error("Error saving settings.", e);
+                _log.Fatal("Error saving settings.", e);
                 _available.Release();
                 throw;
             }
@@ -133,9 +132,8 @@ namespace DonkeySuite.DesktopMonitor.Domain.Model.Settings
 
         private string GetSettingsFilePath()
         {
-            var environmentWrapper = Kernel.Get<IEnvironment>();
-            var sep = environmentWrapper.DirectorySeparatorChar.ToString();
-            var userHome = environmentWrapper.UserHomeDirectory;
+            var sep = _environmentUtility.DirectorySeparatorChar.ToString();
+            var userHome = _environmentUtility.UserHomeDirectory;
             var fileFullPath = string.Join(sep, userHome, ".mdsoftware", "dirWatcher", FileName);
 
             return fileFullPath;

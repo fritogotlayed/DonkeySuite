@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("DonkeySuite.SystemWrappers")]
+[assembly: AssemblyTitle("MadDonkeySoftware.SystemWrappers")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("DonkeySuite.SystemWrappers")]
+[assembly: AssemblyProduct("MadDonkeySoftware.SystemWrappers")]
 [assembly: AssemblyCopyright("Copyright ©  2015")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -20,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("78c4b245-b2b8-4a31-ad52-c71397df37a7")]
+[assembly: Guid("2bd01e3e-d58e-4983-9a4b-a2b3058b580e")]
 
 // Version information for an assembly consists of the following four values:
 //

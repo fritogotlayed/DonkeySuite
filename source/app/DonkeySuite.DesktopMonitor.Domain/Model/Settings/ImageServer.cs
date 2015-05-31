@@ -7,7 +7,7 @@ namespace DonkeySuite.DesktopMonitor.Domain.Model.Settings
         [XmlAttribute("serverUrl")]
         public string ServerUrl { get; set; }
 
-        public void PopulateWithDefaults() {
+        public virtual void PopulateWithDefaults() {
             ServerUrl = "http://localhost:8080/DonkeyImageServer";
         }
     }

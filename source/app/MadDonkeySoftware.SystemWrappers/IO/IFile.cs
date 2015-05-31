@@ -1,6 +1,6 @@
 ﻿using System.IO;
 
-namespace DonkeySuite.SystemWrappers.Interfaces
+namespace MadDonkeySoftware.SystemWrappers.IO
 {
     public interface IFile
     {

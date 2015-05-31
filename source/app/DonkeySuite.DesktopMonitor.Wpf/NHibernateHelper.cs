@@ -1,7 +1,7 @@
 ﻿using System.Configuration;
 using DonkeySuite.DesktopMonitor.Domain;
+using DonkeySuite.DesktopMonitor.Domain.Model;
 using DonkeySuite.DesktopMonitor.Wpf.Mappings;
-using DonkeySuite.SystemWrappers.Interfaces;
 using FluentNHibernate.Cfg;
 using FluentNHibernate.Cfg.Db;
 using NHibernate;
@@ -21,7 +21,7 @@ namespace DonkeySuite.DesktopMonitor.Wpf
             {
                 if (_configuration != null) return _configuration;
 
-                var environmentWrapper = DependencyManager.Kernel.Get<IEnvironment>();
+                var environmentWrapper = DependencyManager.Kernel.Get<IEnvironmentUtility>();
                 var sep = environmentWrapper.DirectorySeparatorChar.ToString();
                 var userHome = environmentWrapper.UserHomeDirectory;
                 var fullFilePath = string.Join(sep, userHome, ".mdsoftware", "dirWatcher", "dirWatcher.db");

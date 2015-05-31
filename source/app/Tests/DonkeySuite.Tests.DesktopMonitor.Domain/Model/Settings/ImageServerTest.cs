@@ -1,5 +1,4 @@
 using System;
-using DonkeySuite.DesktopMonitor.Domain;
 using DonkeySuite.DesktopMonitor.Domain.Model.Settings;
 using NUnit.Framework;
 
@@ -7,10 +6,14 @@ namespace DonkeySuite.Tests.DesktopMonitor.Domain.Model.Settings
 {
     public class ImageServerTest
     {
-        [SetUp]
-        public void SetUp()
+        private class ImageServerTestBundle
         {
-            DependencyManager.Kernel = null;
+            public ImageServer ImageServer { get; private set; }
+
+            public ImageServerTestBundle()
+            {
+                ImageServer = new ImageServer();
+            }
         }
 
         [TearDown]
@@ -22,38 +25,41 @@ namespace DonkeySuite.Tests.DesktopMonitor.Domain.Model.Settings
         [Test]
         public void ImageServerInitializedNull()
         {
+            // Arrange
+            var testBundle = new ImageServerTestBundle();
+
             // Act
-            var server = new ImageServer();
+            var url = testBundle.ImageServer.ServerUrl;
 
             // Assert
-            Assert.AreEqual(null, server.ServerUrl);
+            Assert.AreEqual(null, url);
         }
 
         [Test]
         public void ImageServerConfiguredProperly()
         {
             // Arrange
-            var server = new ImageServer();
+            var testBundle = new ImageServerTestBundle();
 
             // Act
-            server.PopulateWithDefaults();
+            testBundle.ImageServer.PopulateWithDefaults();
 
             // Assert
-            Assert.AreEqual("http://localhost:8080/DonkeyImageServer", server.ServerUrl);
+            Assert.AreEqual("http://localhost:8080/DonkeyImageServer", testBundle.ImageServer.ServerUrl);
         }
 
         [Test]
         public void ImageServerSetsWorkCorrectly()
         {
             // Arrange
-            var server = new ImageServer();
+            var testBundle = new ImageServerTestBundle();
             var url = "http://localhost:9000/Blah";
 
             // Act
-            server.ServerUrl = url;
+            testBundle.ImageServer.ServerUrl = url;
 
             // Assert
-            Assert.AreEqual(url, server.ServerUrl);
+            Assert.AreEqual(url, testBundle.ImageServer.ServerUrl);
         }
 
     }

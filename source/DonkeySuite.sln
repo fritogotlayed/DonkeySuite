@@ -16,7 +16,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{BDE32A9B
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DonkeySuite.Tests.DesktopMonitor.Domain", "app\Tests\DonkeySuite.Tests.DesktopMonitor.Domain\DonkeySuite.Tests.DesktopMonitor.Domain.csproj", "{FEE03E44-C0C9-4C73-9B45-6FC34B8B5E00}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DonkeySuite.SystemWrappers", "app\DonkeySuite.SystemWrappers\DonkeySuite.SystemWrappers.csproj", "{7C5E0314-E847-4088-8614-65D8812FFC9A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MadDonkeySoftware.SystemWrappers", "app\MadDonkeySoftware.SystemWrappers\MadDonkeySoftware.SystemWrappers.csproj", "{E088CE6A-F788-4F7F-A06A-E356FD7645CB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -40,10 +40,10 @@ Global
 		{FEE03E44-C0C9-4C73-9B45-6FC34B8B5E00}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FEE03E44-C0C9-4C73-9B45-6FC34B8B5E00}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FEE03E44-C0C9-4C73-9B45-6FC34B8B5E00}.Release|Any CPU.Build.0 = Release|Any CPU
-		{7C5E0314-E847-4088-8614-65D8812FFC9A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{7C5E0314-E847-4088-8614-65D8812FFC9A}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{7C5E0314-E847-4088-8614-65D8812FFC9A}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{7C5E0314-E847-4088-8614-65D8812FFC9A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E088CE6A-F788-4F7F-A06A-E356FD7645CB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E088CE6A-F788-4F7F-A06A-E356FD7645CB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E088CE6A-F788-4F7F-A06A-E356FD7645CB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E088CE6A-F788-4F7F-A06A-E356FD7645CB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

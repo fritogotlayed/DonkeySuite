@@ -1,9 +1,8 @@
-﻿namespace DonkeySuite.SystemWrappers.Interfaces
+﻿namespace MadDonkeySoftware.SystemWrappers
 {
     public interface IEnvironment
     {
         bool IsWindowsPlatform { get; }
         string UserHomeDirectory { get; }
-        char DirectorySeparatorChar { get; }
     }
 }

@@ -1,12 +1,24 @@
 ﻿using System.Collections.Generic;
+using DonkeySuite.DesktopMonitor.Domain.Model.Providers;
 
 namespace DonkeySuite.DesktopMonitor.Domain.Model.Settings
 {
-    public class WatchDirectories : List<WatchDirectory> // IEnumerable<WatchDirectory>
+    public class WatchDirectories : List<WatchDirectory>
     {
-        public void PopulateWithDefaults()
+        private readonly IServiceLocator _serviceLocator;
+
+        public WatchDirectories() : this(null)
         {
-            var d = new WatchDirectory();
+        }
+
+        public WatchDirectories(IServiceLocator serviceLocator)
+        {
+            _serviceLocator = serviceLocator;
+        }
+
+        public virtual void PopulateWithDefaults()
+        {
+            var d = _serviceLocator.ProvideDefaultWatchDirectory();
             d.PopulateWithDefaults();
             Add(d);
         }

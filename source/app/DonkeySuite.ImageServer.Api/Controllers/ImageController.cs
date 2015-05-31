@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
+using System.Web.Helpers;
 using System.Web.Http;
 using DonkeySuite.ImageServer.Api.Models;
 using log4net;
@@ -11,6 +12,12 @@ namespace DonkeySuite.ImageServer.Api.Controllers
     {
         private static readonly ILog Log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
+        private class Foo
+        {
+            public int Value { get; set; }
+            public string Name { get; set; }
+        }
+
         // GET image
         public IEnumerable<string> Get()
         {
@@ -20,7 +27,7 @@ namespace DonkeySuite.ImageServer.Api.Controllers
         // GET image/5
         public string Get(int id)
         {
-            return "value";
+            return Json.Encode(new Foo() {Value = id, Name = "Blah"});
         }
 
         // POST image

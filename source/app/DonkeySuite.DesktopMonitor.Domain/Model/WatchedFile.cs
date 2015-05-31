@@ -1,52 +1,66 @@
 ﻿using System;
-using System.IO;
-using DonkeySuite.DesktopMonitor.Domain.Model.Requests;
-using DonkeySuite.DesktopMonitor.Domain.Model.Settings;
+using DonkeySuite.DesktopMonitor.Domain.Model.Providers;
 using DonkeySuite.DesktopMonitor.Domain.Model.SortStrategies;
-using DonkeySuite.SystemWrappers.Interfaces;
 using log4net;
-using Ninject;
+using MadDonkeySoftware.SystemWrappers.IO;
 
 namespace DonkeySuite.DesktopMonitor.Domain.Model
 {
     public class WatchedFile
     {
         private ISortStrategy _sortStrategy;
-        private readonly ILog _log = DependencyManager.Kernel.Get<ILog>();
+        private readonly ILog _log;
+        private readonly IServiceLocator _serviceLocator;
+        private readonly IFile _file;
+        private readonly IRequestProvider _requestProvider;
+        private readonly IEnvironmentUtility _environmentUtility;
+        private readonly IDirectory _directory;
+        private readonly IPath _path;
+
+        public WatchedFile() : this(null, null, null, null, null, null, null) { }
+
+        public WatchedFile(ILog log, IServiceLocator serviceLocator, IFile file, IRequestProvider requestProvider, IEnvironmentUtility environmentUtility, IDirectory directory, IPath path)
+        {
+            // TODO: Dependency injection feels like it is bloating the constructor. Might be time to re-address the responsibility of this classes methods.
+            _log = log;
+            _serviceLocator = serviceLocator;
+            _file = file;
+            _requestProvider = requestProvider;
+            _environmentUtility = environmentUtility;
+            _directory = directory;
+            _path = path;
+        }
 
         public virtual string FullPath { get; set; }
         public virtual string FileName { get; set; }
         public virtual bool UploadSuccessful { get; set; }
 
-        protected virtual ILog Log { get { return _log; } }
-
         public virtual ISortStrategy SortStrategy
         {
-            get { return _sortStrategy ?? (_sortStrategy = DependencyManager.Kernel.Get<ISortStrategy>("defaultSortStrategy")); }
+            get { return _sortStrategy ??  (_sortStrategy = _serviceLocator.ProvideSortStrategy(null)); }
             set { _sortStrategy = value; }
         }
 
         public virtual byte[] LoadImageBytes()
         {
-            if (Log.IsInfoEnabled)
+            if (_log.IsInfoEnabled)
             {
-                Log.InfoFormat("Beginning LoadImage: \"{0}\"", FullPath);
+                _log.InfoFormat("Beginning LoadImage: \"{0}\"", FullPath);
             }
             else
             {
-                Log.Debug("Beginning LoadImage method.");
+                _log.Debug("Beginning LoadImage method.");
             }
 
-            var file = DependencyManager.Kernel.Get<IFile>();
-            var data = file.ReadAllBytes(FullPath);
+            var data = _file.ReadAllBytes(FullPath);
 
-            if (Log.IsInfoEnabled)
+            if (_log.IsInfoEnabled)
             {
-                Log.InfoFormat("Returning LoadImage: \"{0}\"", FullPath);
+                _log.InfoFormat("Returning LoadImage: \"{0}\"", FullPath);
             }
             else
             {
-                Log.Debug("Returning LoadImage result.");
+                _log.Debug("Returning LoadImage result.");
             }
 
             return data;
@@ -54,55 +68,46 @@ namespace DonkeySuite.DesktopMonitor.Domain.Model
 
         public virtual void SendToServer()
         {
-            Log.InfoFormat("Transmitting image: {0}", FullPath);
+            _log.InfoFormat("Transmitting image: {0}", FullPath);
 
-            var req = DependencyManager.Kernel.Get<AddImageRequest>();
-            var settings = DependencyManager.Kernel.Get<SettingsManager>().GetSettings();
-            req.RequestUrl = settings.ImageServer.ServerUrl;
-            req.FileName = FileName;
-            req.FileBytes = LoadImageBytes();
+            var req = _requestProvider.ProvideNewAddImageRequest(FileName, LoadImageBytes());
 
             UploadSuccessful = req.Post();
         }
 
         public virtual bool IsInBaseDirectory(String directory)
         {
-            var tmp = Path.Combine(directory, FileName);
+            var tmp = _path.Combine(directory, FileName);
             return tmp.Equals(FullPath);
         }
 
         public virtual void SortFile()
         {
             var oldPath = FullPath;
-            var environmentWrapper = DependencyManager.Kernel.Get<IEnvironment>();
-            var lastDirSeparator = oldPath.LastIndexOf(environmentWrapper.DirectorySeparatorChar);
+            var lastDirSeparator = oldPath.LastIndexOf(_environmentUtility.DirectorySeparatorChar);
             var baseDir = oldPath.Substring(0, lastDirSeparator);
-            string newPath;
 
-            try
-            {
-                newPath = SortStrategy.NewFileName(baseDir, FileName);
-            }
-            catch (ActivationException ex)
-            {
-                _log.Debug("Activation exception on SortStrategy", ex);
-                throw new InvalidOperationException("Sort strategy is not set.");
-            }
+            // try
+            // {
+                var newPath = SortStrategy.NewFileName(baseDir, FileName);
+            // }
+            // catch (ActivationException ex)
+            // {
+                // _log.Debug("Activation exception on SortStrategy", ex);
+                // throw new InvalidOperationException("Sort strategy is not set.");
+            // }
 
-            var fileWrapper = DependencyManager.Kernel.Get<IFile>();
-            if (fileWrapper.Exists(newPath))
+            if (_file.Exists(newPath))
             {
-                Log.InfoFormat("Moving file failed due to existing file in destination. File name: {0}", FileName);
+                _log.InfoFormat("Moving file failed due to existing file in destination. File name: {0}", FileName);
             }
             else
             {
-                var directoryWrapper = DependencyManager.Kernel.Get<IDirectory>();
+                _log.InfoFormat("Renaming file. From: {0} To: {1}", oldPath, newPath);
 
-                Log.InfoFormat("Renaming file. From: {0} To: {1}", oldPath, newPath);
-
-                lastDirSeparator = newPath.LastIndexOf(environmentWrapper.DirectorySeparatorChar);
-                directoryWrapper.CreateDirectory(newPath.Substring(0, lastDirSeparator));
-                fileWrapper.Move(oldPath, newPath);
+                lastDirSeparator = newPath.LastIndexOf(_environmentUtility.DirectorySeparatorChar);
+                _directory.CreateDirectory(newPath.Substring(0, lastDirSeparator));
+                _file.Move(oldPath, newPath);
             }
         }
     }

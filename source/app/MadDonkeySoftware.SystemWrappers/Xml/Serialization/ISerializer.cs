@@ -1,8 +1,8 @@
 ﻿using System.IO;
 
-namespace DonkeySuite.SystemWrappers.Interfaces
+namespace MadDonkeySoftware.SystemWrappers.Xml.Serialization
 {
-    public interface ISerializer
+    public interface IXmlSerializer
     {
         void Serialize(TextWriter writer, object o);
 

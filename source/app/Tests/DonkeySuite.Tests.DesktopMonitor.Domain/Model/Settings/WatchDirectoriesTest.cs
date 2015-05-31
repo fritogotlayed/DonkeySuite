@@ -2,10 +2,9 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using DonkeySuite.DesktopMonitor.Domain;
+using DonkeySuite.DesktopMonitor.Domain.Model.Providers;
 using DonkeySuite.DesktopMonitor.Domain.Model.Settings;
-using DonkeySuite.SystemWrappers.Interfaces;
 using Moq;
-using Ninject;
 using NUnit.Framework;
 
 namespace DonkeySuite.Tests.DesktopMonitor.Domain.Model.Settings
@@ -13,10 +12,16 @@ namespace DonkeySuite.Tests.DesktopMonitor.Domain.Model.Settings
     [TestFixture]
     public class WatchDirectoriesTest
     {
-        [SetUp]
-        public void SetUp()
+        private class WatchDirectoryTestBundle
         {
-            DependencyManager.Kernel = new StandardKernel();
+            public Mock<IServiceLocator> MockServiceLocator { get; private set; }
+            public WatchDirectories WatchDirectories { get; private set; }
+
+            public WatchDirectoryTestBundle()
+            {
+                MockServiceLocator = new Mock<IServiceLocator>();
+                WatchDirectories = new WatchDirectories(MockServiceLocator.Object);
+            }
         }
 
         [TearDown]
@@ -28,42 +33,42 @@ namespace DonkeySuite.Tests.DesktopMonitor.Domain.Model.Settings
         [Test]
         public void WatchDirectoriesInitializedNull()
         {
-            // Act
-            var dirs = new WatchDirectories();
+            // Arrange & Act
+            var testBundle = new WatchDirectoryTestBundle();
 
             // Assert
-            Assert.AreEqual(new List<WatchDirectory>(), dirs);
+            Assert.AreEqual(new List<WatchDirectory>(), testBundle.WatchDirectories);
         }
 
         [Test]
         public void WatchDirectoriesConfiguredProperly()
         {
             // Arrange
-            WatchDirectories dirs = new WatchDirectories();
-            var mockEnvironmentWrapper = new Mock<IEnvironment>();
+            var testBundle = new WatchDirectoryTestBundle();
+            var mockWatchDirectory = new Mock<WatchDirectory>();
 
-            DependencyManager.Kernel.Bind<IEnvironment>().ToMethod(context => mockEnvironmentWrapper.Object);
+            testBundle.MockServiceLocator.Setup(x => x.ProvideDefaultWatchDirectory()).Returns(mockWatchDirectory.Object);
 
             // Act
-            dirs.PopulateWithDefaults();
+            testBundle.WatchDirectories.PopulateWithDefaults();
 
             // Assert
-            Assert.IsNotNull(dirs);
-            Assert.AreEqual(1, dirs.Count);
+            Assert.IsNotNull(testBundle.WatchDirectories);
+            Assert.AreEqual(1, testBundle.WatchDirectories.Count);
         }
 
         [Test]
         public void WatchDirectoriesEnumeratorIsCorrectForGeneric()
         {
             // Arrange
-            var dir = new WatchDirectories();
-            var mockEnvironmentWrapper = new Mock<IEnvironment>();
+            var testBundle = new WatchDirectoryTestBundle();
+            var mockWatchDirectory = new Mock<WatchDirectory>();
 
-            DependencyManager.Kernel.Bind<IEnvironment>().ToMethod(context => mockEnvironmentWrapper.Object);
-            dir.PopulateWithDefaults();
+            testBundle.MockServiceLocator.Setup(x => x.ProvideDefaultWatchDirectory()).Returns(mockWatchDirectory.Object);
+            testBundle.WatchDirectories.PopulateWithDefaults();
 
             // Act
-            var it = dir.GetEnumerator();
+            var it = testBundle.WatchDirectories.GetEnumerator();
 
             // Assert
             Assert.AreEqual(true, it.MoveNext());
@@ -75,14 +80,14 @@ namespace DonkeySuite.Tests.DesktopMonitor.Domain.Model.Settings
         public void WatchDirectoriesEnumeratorIsCorrectForNonGeneric()
         {
             // Arrange
-            var dir = new WatchDirectories();
-            var mockEnvironmentWrapper = new Mock<IEnvironment>();
+            var testBundle = new WatchDirectoryTestBundle();
+            var mockWatchDirectory = new Mock<WatchDirectory>();
 
-            DependencyManager.Kernel.Bind<IEnvironment>().ToMethod(context => mockEnvironmentWrapper.Object);
-            dir.PopulateWithDefaults();
+            testBundle.MockServiceLocator.Setup(x => x.ProvideDefaultWatchDirectory()).Returns(mockWatchDirectory.Object);
+            testBundle.WatchDirectories.PopulateWithDefaults();
 
             // Act
-            var it = ((IEnumerable)dir).GetEnumerator();
+            var it = ((IEnumerable)testBundle.WatchDirectories).GetEnumerator();
 
             // Assert
             Assert.AreEqual(true, it.MoveNext());

@@ -1,11 +1,21 @@
 ﻿using System.Xml.Serialization;
-using DonkeySuite.SystemWrappers.Interfaces;
-using Ninject;
+using MadDonkeySoftware.SystemWrappers;
 
 namespace DonkeySuite.DesktopMonitor.Domain.Model.Settings
 {
     public class WatchDirectory
     {
+        private readonly IEnvironment _environment;
+
+        public WatchDirectory() : this(null)
+        {
+        }
+
+        public WatchDirectory(IEnvironment environment)
+        {
+            _environment = environment;
+        }
+
         [XmlAttribute("path")]
         public string Path { get; set; }
 
@@ -21,10 +31,9 @@ namespace DonkeySuite.DesktopMonitor.Domain.Model.Settings
         [XmlAttribute("sortStrategy")]
         public string SortStrategy { get; set; }
 
-        public void PopulateWithDefaults()
+        public virtual void PopulateWithDefaults()
         {
-            var environment = DependencyManager.Kernel.Get<IEnvironment>();
-            Path = environment.IsWindowsPlatform ? "C:\\" : "/"; // TODO: Make platform independent
+            Path = _environment.IsWindowsPlatform ? "C:\\" : "/";
             FileExtensions = "jpg,jpeg,gif,tiff";
             Mode = OperationMode.Unknown;
             SortStrategy = "Simple";

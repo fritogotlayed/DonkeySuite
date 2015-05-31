@@ -1,7 +1,6 @@
 ﻿using System.IO;
-using DonkeySuite.SystemWrappers.Interfaces;
 
-namespace DonkeySuite.SystemWrappers
+namespace MadDonkeySoftware.SystemWrappers.IO
 {
     public class FileWrapper : IFile
     {

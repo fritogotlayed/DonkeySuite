@@ -1,11 +1,11 @@
 ﻿using System.Threading;
-using DonkeySuite.SystemWrappers.Interfaces;
 
-namespace DonkeySuite.SystemWrappers
+namespace MadDonkeySoftware.SystemWrappers.Threading
 {
     public class SemaphoreWrapper : ISemaphore
     {
         private readonly Semaphore _semaphore;
+
         public SemaphoreWrapper(int initialCount, int maximumCount)
         {
             _semaphore = new Semaphore(initialCount, maximumCount);

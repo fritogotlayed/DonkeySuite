@@ -1,4 +1,4 @@
-﻿namespace DonkeySuite.SystemWrappers.Interfaces
+﻿namespace MadDonkeySoftware.SystemWrappers.Threading
 {
     public interface ISemaphore
     {

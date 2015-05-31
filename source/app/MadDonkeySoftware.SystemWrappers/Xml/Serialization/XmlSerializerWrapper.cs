@@ -1,10 +1,9 @@
 ﻿using System.IO;
 using System.Xml.Serialization;
-using DonkeySuite.SystemWrappers.Interfaces;
 
-namespace DonkeySuite.SystemWrappers
+namespace MadDonkeySoftware.SystemWrappers.Xml.Serialization
 {
-    public class XmlSerializerWrapper : ISerializer
+    public class XmlSerializerWrapper : IXmlSerializer
     {
         private readonly XmlSerializer _serializer;
 

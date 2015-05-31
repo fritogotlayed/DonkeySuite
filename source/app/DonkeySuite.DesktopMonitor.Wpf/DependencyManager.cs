@@ -1,15 +1,19 @@
 ﻿using System;
 using System.IO;
 using System.Xml.Serialization;
+using DonkeySuite.DesktopMonitor.Domain.Model;
+using DonkeySuite.DesktopMonitor.Domain.Model.Providers;
 using DonkeySuite.DesktopMonitor.Domain.Model.Requests;
 using DonkeySuite.DesktopMonitor.Domain.Model.Settings;
 using DonkeySuite.DesktopMonitor.Domain.Model.SortStrategies;
-using DonkeySuite.SystemWrappers;
-using DonkeySuite.SystemWrappers.Interfaces;
 using log4net;
+using MadDonkeySoftware.SystemWrappers;
+using MadDonkeySoftware.SystemWrappers.IO;
+using MadDonkeySoftware.SystemWrappers.Threading;
+using MadDonkeySoftware.SystemWrappers.Xml.Serialization;
 using Ninject;
 
-namespace DonkeySuite.DesktopMonitor.Domain
+namespace DonkeySuite.DesktopMonitor.Wpf
 {
     public static class DependencyManager
     {
@@ -26,6 +30,7 @@ namespace DonkeySuite.DesktopMonitor.Domain
             AdditionalBindings = kernel => { };
         }
 
+        // TODO: Refactor calling code so that this may be removed.
         public static IKernel Kernel
         {
             get
@@ -56,22 +61,27 @@ namespace DonkeySuite.DesktopMonitor.Domain
             Log.Debug("Initializing kernel.");
 
             kernel.Bind<AddImageRequest>().ToSelf().InTransientScope();
+            kernel.Bind<IDirectory>().To<DirectoryWrapper>().InTransientScope();
             kernel.Bind<IEnvironment>().To<EnvironmentWrapper>().InTransientScope();
+            kernel.Bind<IEnvironmentUtility>().To<EnvironmentUtility>().InTransientScope();
             kernel.Bind<IFile>().To<FileWrapper>().InTransientScope();
             kernel.Bind<ILog>().ToMethod(context => LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType));
+            kernel.Bind<IPath>().To<PathWrapper>().InTransientScope();
+            kernel.Bind<IRequestProvider>().To<RequestProvider>().InTransientScope();
             kernel.Bind<ISemaphore>().To<SemaphoreWrapper>().InTransientScope()
                 .WithConstructorArgument("initialCount", 1)
                 .WithConstructorArgument("maximumCount", 1);
-            kernel.Bind<ISerializer>()
+            kernel.Bind<IServiceLocator>().To<ServiceLocator>();
+            kernel.Bind<IXmlSerializer>()
                 .To<XmlSerializerWrapper>()
                 .InTransientScope()
-                .Named("SettingsSerializer")
                 .WithConstructorArgument("serializer", new XmlSerializer(typeof (SettingsRoot)));
             kernel.Bind<SettingsManager>()
                 .ToSelf()
                 .InSingletonScope();
             kernel.Bind<SettingsRoot>().ToSelf().InTransientScope();
             kernel.Bind<TextWriter>().To<StreamWriter>().InTransientScope();
+            kernel.Bind<WatchedFile>().ToSelf().InTransientScope();
 
             // Sort strategies are checked by using camel case in code.
             kernel.Bind<ISortStrategy>().To<SimpleSortStrategy>().Named("defaultSortStrategy");

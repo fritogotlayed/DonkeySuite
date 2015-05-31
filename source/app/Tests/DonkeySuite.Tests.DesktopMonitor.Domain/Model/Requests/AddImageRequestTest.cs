@@ -1,64 +1,66 @@
 using System;
 using System.IO;
 using System.Net;
-using DonkeySuite.DesktopMonitor.Domain;
 using DonkeySuite.DesktopMonitor.Domain.Model.Requests;
 using Moq;
-using Ninject;
 using NUnit.Framework;
 
 namespace DonkeySuite.Tests.DesktopMonitor.Domain.Model.Requests
 {
     public class AddImageRequestTest
     {
-        private IKernel _testKernel;
-
-        [SetUp]
-        public void SetUp()
+        private class AddImageRequestTestBundle
         {
-            _testKernel = new StandardKernel();
-            DependencyManager.Kernel = _testKernel;
+            public AddImageRequest AddImageRequest { get; private set; }
+
+            public AddImageRequestTestBundle()
+            {
+                AddImageRequest = new AddImageRequest();
+            }
         }
 
         [TearDown]
         public void TearDown()
         {
-            _testKernel.Dispose();
             GC.Collect();
         }
 
+        // TODO: 
         [Test]
         public void AddImageRequest_SetRequestUrl_PathWithoutTrailingSlashProperlyFormed()
         {
             // Arrange
-            var request = new AddImageRequest();
+            var testBundle = new AddImageRequestTestBundle();
 
             // Act
-            request.RequestUrl = "http://google.com";
+            testBundle.AddImageRequest.RequestUrl = "http://google.com";
 
             // Assert
-            Assert.AreEqual("http://google.com/image", request.RequestUrl);
+            Assert.AreEqual("http://google.com/image", testBundle.AddImageRequest.RequestUrl);
         }
 
         [Test]
         public void AddImageRequest_SetRequestUrl_PathWithTrailingSlashProperlyFormed()
         {
             // Arrange
-            var request = new AddImageRequest();
+            var testBundle = new AddImageRequestTestBundle();
 
             // Act
-            request.RequestUrl = "http://google.com/";
+            testBundle.AddImageRequest.RequestUrl = "http://google.com/";
 
             // Assert
-            Assert.AreEqual("http://google.com/image", request.RequestUrl);
+            Assert.AreEqual("http://google.com/image", testBundle.AddImageRequest.RequestUrl);
         }
 
         [Test]
         public void post_CallsPopulateRequestParameters()
         {
             // Arrange
+            var testBundle = new AddImageRequestTestBundle();
             var mockWebRequest = new Mock<WebRequest>(MockBehavior.Strict);
-            var request = new AddImageRequest {FileBytes = new byte[] {1, 2, 3}, FileName = "Test.foo", RequestUrl = "http://google.com/"};
+            testBundle.AddImageRequest.FileBytes = new byte[] {1, 2, 3};
+            testBundle.AddImageRequest.FileName = "Test.foo";
+            testBundle.AddImageRequest.RequestUrl = "http://google.com/";
 
             mockWebRequest.SetupSet(x => x.Method = "POST");
             mockWebRequest.SetupSet(x => x.ContentType = "application/x-www-form-urlencoded");
@@ -68,10 +70,10 @@ namespace DonkeySuite.Tests.DesktopMonitor.Domain.Model.Requests
             WebRequestFactory.AddWebRequestMock(mockWebRequest.Object);
 
             // Act
-            request.Post();
+            testBundle.AddImageRequest.Post();
 
             // Assert
-            Assert.AreEqual("http://google.com/image", request.RequestUrl);
+            Assert.AreEqual("http://google.com/image", testBundle.AddImageRequest.RequestUrl);
         }
     }
 }

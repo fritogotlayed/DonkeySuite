@@ -2,10 +2,11 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using DonkeySuite.DesktopMonitor.Domain.Model.Providers;
+using DonkeySuite.DesktopMonitor.Domain.Model.Repositories.Settings;
 using DonkeySuite.DesktopMonitor.Domain.Model.Settings;
 using DonkeySuite.DesktopMonitor.Domain.Model.SortStrategies;
 using log4net;
-using Ninject;
 
 namespace DonkeySuite.DesktopMonitor.Domain.Model
 {
@@ -18,16 +19,24 @@ namespace DonkeySuite.DesktopMonitor.Domain.Model
         private List<WatchedFile> _imageFiles;
         private readonly List<string> _acceptableExtensions;
         private ISortStrategy _sortStrategy;
+        private IServiceLocator _serviceLocator;
 
         public WatchedDirectory()
         {
             _acceptableExtensions = new List<string>();
         }
 
+        public WatchedDirectory(IServiceLocator serviceLocator) : this()
+        {
+            _serviceLocator = serviceLocator;
+        }
+
+        /*
         public WatchedDirectory(string directory) : this()
         {
             this._directory = directory;
         }
+        */
 
         public void Configure(WatchDirectory watchDir)
         {
@@ -38,12 +47,12 @@ namespace DonkeySuite.DesktopMonitor.Domain.Model
             var strategy = watchDir.SortStrategy;
             if (string.IsNullOrEmpty(strategy))
             {
-                _sortStrategy = DependencyManager.Kernel.Get<ISortStrategy>("defaultSortStrategy");
+                _sortStrategy = _serviceLocator.ProvideDefaultSortStrategy();
             }
             else
             {
                 strategy = strategy.ToLower();
-                _sortStrategy = DependencyManager.Kernel.Get<ISortStrategy>(string.Join(string.Empty, strategy, "SortStrategy"));
+                _sortStrategy = _serviceLocator.ProvideSortStrategy(strategy);
             }
 
             foreach (string ext in watchDir.FileExtensions.Split(','))
@@ -52,7 +61,7 @@ namespace DonkeySuite.DesktopMonitor.Domain.Model
             }
         }
 
-        public void ProcessAvailableImages(IRepository<WatchedFile, string> watchedFileRepository)
+        public void ProcessAvailableImages(IWatchedFileRepository watchedFileRepository)
         {
             var images = GetAvailableImages(watchedFileRepository);
 
@@ -63,7 +72,7 @@ namespace DonkeySuite.DesktopMonitor.Domain.Model
                     if (!image.UploadSuccessful && (_mode.Equals(OperationMode.UploadAndClear) || _mode.Equals(OperationMode.UploadOnly) || _mode.Equals(OperationMode.UploadAndSort)))
                     {
                         image.SendToServer();
-                        watchedFileRepository.Insert(image);
+                        watchedFileRepository.Save(image);
                     }
 
                     if (image.IsInBaseDirectory(_directory) && (_mode.Equals(OperationMode.SortOnly) || _mode.Equals(OperationMode.UploadAndSort)))
@@ -75,13 +84,13 @@ namespace DonkeySuite.DesktopMonitor.Domain.Model
                 catch (IOException ex)
                 {
                     image.UploadSuccessful = false;
-                    watchedFileRepository.Insert(image);
+                    watchedFileRepository.Save(image);
                     Log.Error("Failed: " + image, ex);
                 }
             }
         }
 
-        private List<WatchedFile> GetAvailableImages(IRepository<WatchedFile, string> watchedFileRepository)
+        private List<WatchedFile> GetAvailableImages(IWatchedFileRepository watchedFileRepository)
         {
             Log.DebugFormat("Beginning to list available images: {0}", _directory);
 
@@ -94,23 +103,33 @@ namespace DonkeySuite.DesktopMonitor.Domain.Model
             return _imageFiles;
         }
 
-        private void PopulateFilesForFolder(IRepository<WatchedFile, string> watchedFileRepository, List<WatchedFile> fileList, String path)
+        private void PopulateFilesForFolder(IWatchedFileRepository watchedFileRepository, List<WatchedFile> fileList, String path)
         {
             Log.DebugFormat("populating files and subfiles in {0}", path);
 
             foreach (var file in Directory.GetFiles(path).Where(f => _acceptableExtensions.Contains(Path.GetExtension(f))))
             {
-                var watchedFile = watchedFileRepository.GetById(file);
+                var watchedFile = watchedFileRepository.LoadFileForPath(file);
                 Log.DebugFormat("Processing file {0}", file);
 
                 // If we can't find the file then create it
                 if (watchedFile == null)
                 {
-                    watchedFile = DependencyManager.Kernel.Get<WatchedFile>();
+                    watchedFile = watchedFileRepository.CreateNew();
                     watchedFile.FullPath = file;
                     watchedFile.FileName = Path.GetFileName(file);
                     watchedFile.UploadSuccessful = false;
                 }
+                else
+                {
+                    // This is a hack until I can get things fully dependency injected.
+                    var tmp = watchedFile;
+                    watchedFile = watchedFileRepository.CreateNew();
+                    watchedFile.FullPath = tmp.FullPath;
+                    watchedFile.FileName = tmp.FileName;
+                    watchedFile.UploadSuccessful = tmp.UploadSuccessful;
+                }
+
 
                 // Ensure each file has the correct sort strategy in-case it has changed.
                 watchedFile.SortStrategy = _sortStrategy;

@@ -29,7 +29,7 @@ namespace DonkeySuite.DesktopMonitor.Wpf.ViewModel
         /// </summary>
         public ViewModelLocator()
         {
-            ServiceLocator.SetLocatorProvider(() => SimpleIoc.Default);
+            Microsoft.Practices.ServiceLocation.ServiceLocator.SetLocatorProvider(() => SimpleIoc.Default);
 
             ////if (ViewModelBase.IsInDesignModeStatic)
             ////{
@@ -49,7 +49,7 @@ namespace DonkeySuite.DesktopMonitor.Wpf.ViewModel
         {
             get
             {
-                return ServiceLocator.Current.GetInstance<MainViewModel>();
+                return Microsoft.Practices.ServiceLocation.ServiceLocator.Current.GetInstance<MainViewModel>();
             }
         }
         

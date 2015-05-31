@@ -103,10 +103,12 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="DependencyManager.cs" />
     <Compile Include="Mappings\WatchedFileMap.cs" />
     <Compile Include="NHibernateHelper.cs" />
     <Compile Include="Repositories\Repository.cs" />
     <Compile Include="Repositories\WatchFileRepository.cs" />
+    <Compile Include="ServiceLocator.cs" />
     <Compile Include="ViewModel\MainViewModel.cs" />
     <Compile Include="ViewModel\ViewModelLocator.cs" />
     <Page Include="MainWindow.xaml">
@@ -155,9 +157,9 @@
       <Project>{F284CAB2-54E4-4918-B691-FB5923103225}</Project>
       <Name>DonkeySuite.DesktopMonitor.Domain</Name>
     </ProjectReference>
-    <ProjectReference Include="..\DonkeySuite.SystemWrappers\DonkeySuite.SystemWrappers.csproj">
-      <Project>{7C5E0314-E847-4088-8614-65D8812FFC9A}</Project>
-      <Name>DonkeySuite.SystemWrappers</Name>
+    <ProjectReference Include="..\MadDonkeySoftware.SystemWrappers\MadDonkeySoftware.SystemWrappers.csproj">
+      <Project>{E088CE6A-F788-4F7F-A06A-E356FD7645CB}</Project>
+      <Name>MadDonkeySoftware.SystemWrappers</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

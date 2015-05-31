@@ -1,33 +1,32 @@
 ﻿using DonkeySuite.DesktopMonitor.Domain.Model;
+using DonkeySuite.DesktopMonitor.Domain.Model.Repositories.Settings;
 using NHibernate;
+using Ninject;
 
 namespace DonkeySuite.DesktopMonitor.Wpf.Repositories
 {
-    public class WatchedFileRepository : Repository<WatchedFile, string>
+    public class WatchedFileRepository : Repository, IWatchedFileRepository
     {
-        public WatchedFileRepository(ISession session) : base(session)
+        private readonly IKernel _kernel;
+
+        public WatchedFileRepository(ISession session, IKernel kernel) : base(session)
         {
+            _kernel = kernel;
         }
 
-        public override string Insert(WatchedFile entity)
+        public WatchedFile CreateNew()
         {
-            return (string)Session.Save(entity);
+            return _kernel.Get<WatchedFile>();
         }
 
-        public override void Delete(WatchedFile entity)
+        public WatchedFile LoadFileForPath(string filePath)
         {
-            Session.Delete(entity);
+            return Session.Get<WatchedFile>(filePath);
         }
 
-        public override void Update(WatchedFile entity)
+        public void Save(WatchedFile watchedFile)
         {
-            Session.Update(entity);
+            Session.Save(watchedFile);
         }
-
-        public override WatchedFile GetById(string id)
-        {
-            return Session.Get<WatchedFile>(id);
-        }
-
     }
 }
