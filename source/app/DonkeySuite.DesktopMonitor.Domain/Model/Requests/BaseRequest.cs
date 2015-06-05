@@ -4,23 +4,30 @@ using System.IO;
 using System.Net;
 using System.Text;
 using log4net;
+using MadDonkeySoftware.SystemWrappers.Net;
 
 namespace DonkeySuite.DesktopMonitor.Domain.Model.Requests
 {
-    public abstract class BaseRequest
+    public abstract class BaseRequest : IBaseRequest
     {
+        private IWebRequestFactory _webRequestFactory;
         private static readonly ILog Log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
         public virtual string RequestUrl { get; set; }
         public virtual string ResponseStatus { get; protected set; }
         public virtual string ResponseData { get; protected set; }
 
+        public BaseRequest(IWebRequestFactory webRequestFactory)
+        {
+            _webRequestFactory = webRequestFactory;
+        }
+
         public virtual bool Post()
         {
             try
             {
                 // Create a request using a URL that can receive a post. 
-                var request = WebRequestFactory.CreateWebRequest(RequestUrl);
+                var request = _webRequestFactory.Create(RequestUrl);
                 request.Method = "POST";
                 request.ContentType = @"application/x-www-form-urlencoded";
 
@@ -48,7 +55,7 @@ namespace DonkeySuite.DesktopMonitor.Domain.Model.Requests
 
                 // Get the response and update the status
                 Log.DebugFormat("Performing post to \"{0}\".", RequestUrl);
-                var response = (HttpWebResponse) request.GetResponse();
+                var response = (IHttpWebResponse) request.GetResponse();
                 ResponseStatus = response.StatusDescription;
                 Log.DebugFormat("Received response with code [{0}].", response.StatusCode);
 

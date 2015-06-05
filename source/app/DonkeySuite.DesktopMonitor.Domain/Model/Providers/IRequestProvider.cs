@@ -4,6 +4,6 @@ namespace DonkeySuite.DesktopMonitor.Domain.Model.Providers
 {
     public interface IRequestProvider
     {
-        AddImageRequest ProvideNewAddImageRequest(string fileName, byte[] imageBytes);
+        IAddImageRequest ProvideNewAddImageRequest(string fileName, byte[] imageBytes);
     }
 }

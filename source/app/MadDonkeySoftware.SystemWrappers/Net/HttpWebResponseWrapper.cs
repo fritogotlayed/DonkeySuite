@@ -1,39 +1,21 @@
-﻿using System;
-using System.IO;
-using System.Net;
+﻿using System.Net;
 
 namespace MadDonkeySoftware.SystemWrappers.Net
 {
-    public class HttpWebResponseWrapper : IHttpWebResponse
+    public class HttpWebResponseWrapper : WebResponseWrapper, IHttpWebResponse
     {
-        private WebResponse _response;
-
-        public HttpWebResponseWrapper(HttpWebResponse response)
+        public HttpWebResponseWrapper(WebResponse response) : base(response)
         {
-            _response = response;
         }
 
-        public void Dispose()
+        public string StatusDescription
         {
-            Dispose(true);
-            GC.SuppressFinalize(this);
+            get { return ((HttpWebResponse)Response).StatusDescription; }
         }
 
-        private void Dispose(bool disposing)
+        public HttpStatusCode StatusCode
         {
-            if (disposing)
-            {
-                if (_response != null)
-                {
-                    ((IDisposable)_response).Dispose();
-                    _response = null;
-                }
-            }
-        }
-
-        public Stream GetResponseStream()
-        {
-            return _response.GetResponseStream();
+            get { return ((HttpWebResponse)Response).StatusCode; }
         }
     }
 }

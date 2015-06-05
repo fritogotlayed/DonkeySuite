@@ -1,11 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
+using MadDonkeySoftware.SystemWrappers.Net;
 
 namespace DonkeySuite.DesktopMonitor.Domain.Model.Requests
 {
-    public class AddImageRequest : BaseRequest
+    public class AddImageRequest : BaseRequest, IAddImageRequest
     {
         private string _url;
+
+        public AddImageRequest(IWebRequestFactory webRequestFactory) : base(webRequestFactory)
+        {
+        }
 
         public override string RequestUrl
         {

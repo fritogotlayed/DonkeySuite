@@ -1,10 +1,10 @@
-﻿using System;
-using System.IO;
+﻿using System.Net;
 
 namespace MadDonkeySoftware.SystemWrappers.Net
 {
-    public interface IHttpWebResponse : IDisposable
+    public interface IHttpWebResponse : IWebResponse
     {
-        Stream GetResponseStream();
+        string StatusDescription { get; }
+        HttpStatusCode StatusCode { get; }
     }
 }

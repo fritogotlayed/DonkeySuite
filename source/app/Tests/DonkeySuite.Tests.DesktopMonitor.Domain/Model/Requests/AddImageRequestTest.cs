@@ -4,6 +4,7 @@ using System.Net;
 using DonkeySuite.DesktopMonitor.Domain.Model.Requests;
 using Moq;
 using NUnit.Framework;
+using MadDonkeySoftware.SystemWrappers.Net;
 
 namespace DonkeySuite.Tests.DesktopMonitor.Domain.Model.Requests
 {
@@ -11,11 +12,13 @@ namespace DonkeySuite.Tests.DesktopMonitor.Domain.Model.Requests
     {
         private class AddImageRequestTestBundle
         {
+            public Mock<IWebRequestFactory> MockWebRequestFactory { get; private set; }
             public AddImageRequest AddImageRequest { get; private set; }
 
             public AddImageRequestTestBundle()
             {
-                AddImageRequest = new AddImageRequest();
+                MockWebRequestFactory = new Mock<IWebRequestFactory>();
+                AddImageRequest = new AddImageRequest(MockWebRequestFactory.Object);
             }
         }
 
@@ -57,7 +60,7 @@ namespace DonkeySuite.Tests.DesktopMonitor.Domain.Model.Requests
         {
             // Arrange
             var testBundle = new AddImageRequestTestBundle();
-            var mockWebRequest = new Mock<WebRequest>(MockBehavior.Strict);
+            var mockWebRequest = new Mock<IWebRequest>(MockBehavior.Strict);
             testBundle.AddImageRequest.FileBytes = new byte[] {1, 2, 3};
             testBundle.AddImageRequest.FileName = "Test.foo";
             testBundle.AddImageRequest.RequestUrl = "http://google.com/";
@@ -66,8 +69,9 @@ namespace DonkeySuite.Tests.DesktopMonitor.Domain.Model.Requests
             mockWebRequest.SetupSet(x => x.ContentType = "application/x-www-form-urlencoded");
             mockWebRequest.SetupSet(x => x.ContentLength = 30);
             mockWebRequest.Setup(x => x.GetRequestStream()).Returns(new MemoryStream());
-            mockWebRequest.Setup(x => x.GetResponse()).Returns(new Mock<HttpWebResponse>().Object);
-            WebRequestFactory.AddWebRequestMock(mockWebRequest.Object);
+            mockWebRequest.Setup(x => x.GetResponse()).Returns(new Mock<IHttpWebResponse>().Object);
+            testBundle.MockWebRequestFactory.Setup(x => x.Create(It.IsAny<string>())).Returns(mockWebRequest.Object);
+            // WebRequestFactory.AddWebRequestMock(mockWebRequest.Object);
 
             // Act
             testBundle.AddImageRequest.Post();

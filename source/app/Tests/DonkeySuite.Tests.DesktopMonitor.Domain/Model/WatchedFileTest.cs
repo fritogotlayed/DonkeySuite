@@ -117,7 +117,7 @@ namespace DonkeySuite.Tests.DesktopMonitor.Domain.Model
             // Arrange
             const string filePath = "/foo/bar/testFile.txt";
             byte[] fileBytes = {1, 4, 3};
-            var mockAddImageRequest = new Mock<AddImageRequest>();
+            var mockAddImageRequest = new Mock<IAddImageRequest>();
             var testBundle = new WatchedFileTestBundle();
 
             testBundle.MockRequestProvider.Setup(x => x.ProvideNewAddImageRequest("testFile.txt", fileBytes)).Returns(mockAddImageRequest.Object);
