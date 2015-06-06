@@ -8,17 +8,19 @@ namespace DonkeySuite.DesktopMonitor.Domain.Model.Providers
     {
         private readonly SettingsManager _settingsManager;
         private readonly IWebRequestFactory _webRequestFactory;
+        private readonly ILogProvider _logProvider;
 
-        public RequestProvider(SettingsManager settingsManager, IWebRequestFactory webRequestFactory)
+        public RequestProvider(SettingsManager settingsManager, IWebRequestFactory webRequestFactory, ILogProvider logProvider)
         {
             _settingsManager = settingsManager;
             _webRequestFactory = webRequestFactory;
+            _logProvider = logProvider;
         }
 
         public IAddImageRequest ProvideNewAddImageRequest(string fileName, byte[] imageBytes)
         {
             var settings = _settingsManager.GetSettings();
-            return new AddImageRequest(_webRequestFactory)
+            return new AddImageRequest(_webRequestFactory, _logProvider)
             {
                 RequestUrl = settings.ImageServer.ServerUrl,
                 FileBytes = imageBytes,

@@ -10,16 +10,17 @@ namespace DonkeySuite.DesktopMonitor.Domain.Model.Requests
 {
     public abstract class BaseRequest : IBaseRequest
     {
-        private IWebRequestFactory _webRequestFactory;
-        private static readonly ILog Log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private readonly IWebRequestFactory _webRequestFactory;
+        private static ILog _log;
 
         public virtual string RequestUrl { get; set; }
         public virtual string ResponseStatus { get; protected set; }
         public virtual string ResponseData { get; protected set; }
 
-        public BaseRequest(IWebRequestFactory webRequestFactory)
+        protected BaseRequest(IWebRequestFactory webRequestFactory, ILogProvider logProvider)
         {
             _webRequestFactory = webRequestFactory;
+            _log = logProvider.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         }
 
         public virtual bool Post()
@@ -54,23 +55,23 @@ namespace DonkeySuite.DesktopMonitor.Domain.Model.Requests
                 }
 
                 // Get the response and update the status
-                Log.DebugFormat("Performing post to \"{0}\".", RequestUrl);
+                _log.DebugFormat("Performing post to \"{0}\".", RequestUrl);
                 var response = (IHttpWebResponse) request.GetResponse();
                 ResponseStatus = response.StatusDescription;
-                Log.DebugFormat("Received response with code [{0}].", response.StatusCode);
+                _log.DebugFormat("Received response with code [{0}].", response.StatusCode);
 
                 // Pull the response data out and place it into the corresponding property.
                 using (var responseStream = response.GetResponseStream())
                 {
                     if (responseStream != null)
                     {
-                        Log.DebugFormat("Reading response data for last request.");
+                        _log.DebugFormat("Reading response data for last request.");
                         var reader = new StreamReader(responseStream);
                         ResponseData = reader.ReadToEnd();
                     }
                     else
                     {
-                        Log.DebugFormat("Response data is null for last request. Bypassing parsing.");
+                        _log.DebugFormat("Response data is null for last request. Bypassing parsing.");
                     }
                 }
 
@@ -78,7 +79,7 @@ namespace DonkeySuite.DesktopMonitor.Domain.Model.Requests
             }
             catch (WebException ex)
             {
-                Log.Error(string.Format("Failed posting to server.{0}{1}", Environment.NewLine, this), ex);
+                _log.Error(string.Format("Failed posting to server.{0}{1}", Environment.NewLine, this), ex);
                 return false;
             }
         }

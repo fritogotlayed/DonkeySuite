@@ -6,7 +6,6 @@ using DonkeySuite.DesktopMonitor.Domain.Model;
 using DonkeySuite.DesktopMonitor.Domain.Model.Providers;
 using DonkeySuite.DesktopMonitor.Domain.Model.Settings;
 using log4net;
-using MadDonkeySoftware.SystemWrappers;
 using MadDonkeySoftware.SystemWrappers.IO;
 using MadDonkeySoftware.SystemWrappers.Threading;
 using MadDonkeySoftware.SystemWrappers.Xml.Serialization;
@@ -136,15 +135,16 @@ namespace DonkeySuite.Tests.DesktopMonitor.Domain.Model.Settings
             var mockSettingsRoot = new Mock<SettingsRoot>();
             var testBundle = new SettingsManagerTestBundle();
 
+            testBundle.MockFile.Setup(x => x.Exists(It.IsAny<string>())).Returns(true);
             testBundle.MockEnvironmentUtility.SetupGet(x => x.IsWindowsPlatform).Returns(true);
-            testBundle.MockServiceLocator.Setup(x => x.ProvideDefaultSettingsRoot()).Returns(mockSettingsRoot.Object);
+            testBundle.MockSerializer.Setup(x => x.Deserialize(It.IsAny<Stream>())).Returns(mockSettingsRoot.Object);
 
             // Act
             var settings = testBundle.SettingsManager.GetSettings();
 
             // Assert
             Assert.AreSame(mockSettingsRoot.Object, settings);
-            testBundle.MockSerializer.Verify(x => x.Serialize(It.IsAny<TextWriter>(), It.IsAny<object>()), Times.Once);
+            testBundle.MockSerializer.Verify(x => x.Serialize(It.IsAny<TextWriter>(), It.IsAny<object>()), Times.Never);
         }
 
         [Test]
@@ -200,6 +200,32 @@ namespace DonkeySuite.Tests.DesktopMonitor.Domain.Model.Settings
 
             // Assert
             testBundle.MockSerializer.Verify(x => x.Serialize(It.IsAny<TextWriter>(), It.IsAny<object>()), Times.Once);
+            Assert.AreEqual(testException, thrownException);
+        }
+
+        [Test]
+        public void SettingsManagerGetSettingsRethrowsException()
+        {
+            // Arrange
+            var testBundle = new SettingsManagerTestBundle();
+            var testException = new Exception("test exception");
+            Exception thrownException = null;
+
+            testBundle.MockEnvironmentUtility.SetupGet(x => x.DirectorySeparatorChar).Throws(testException);
+
+            // Act
+            try
+            {
+                testBundle.SettingsManager.GetSettings();
+            }
+            catch (Exception ex)
+            {
+                thrownException = ex;
+            }
+
+            // Assert
+            testBundle.MockSemaphore.Verify(x => x.WaitOne(), Times.Once);
+            testBundle.MockSemaphore.Verify(x => x.Release(), Times.Once);
             Assert.AreEqual(testException, thrownException);
         }
 

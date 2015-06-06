@@ -8,7 +8,7 @@ namespace DonkeySuite.DesktopMonitor.Domain.Model.Requests
     {
         private string _url;
 
-        public AddImageRequest(IWebRequestFactory webRequestFactory) : base(webRequestFactory)
+        public AddImageRequest(IWebRequestFactory webRequestFactory, ILogProvider logProvider) : base(webRequestFactory, logProvider)
         {
         }
 

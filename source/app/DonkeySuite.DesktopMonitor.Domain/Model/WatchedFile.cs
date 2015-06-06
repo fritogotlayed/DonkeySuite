@@ -15,11 +15,10 @@ namespace DonkeySuite.DesktopMonitor.Domain.Model
         private readonly IRequestProvider _requestProvider;
         private readonly IEnvironmentUtility _environmentUtility;
         private readonly IDirectory _directory;
-        private readonly IPath _path;
 
-        public WatchedFile() : this(null, null, null, null, null, null, null) { }
+        public WatchedFile() : this(null, null, null, null, null, null) { }
 
-        public WatchedFile(ILog log, IServiceLocator serviceLocator, IFile file, IRequestProvider requestProvider, IEnvironmentUtility environmentUtility, IDirectory directory, IPath path)
+        public WatchedFile(ILog log, IServiceLocator serviceLocator, IFile file, IRequestProvider requestProvider, IEnvironmentUtility environmentUtility, IDirectory directory)
         {
             // TODO: Dependency injection feels like it is bloating the constructor. Might be time to re-address the responsibility of this classes methods.
             _log = log;
@@ -28,7 +27,6 @@ namespace DonkeySuite.DesktopMonitor.Domain.Model
             _requestProvider = requestProvider;
             _environmentUtility = environmentUtility;
             _directory = directory;
-            _path = path;
         }
 
         public virtual string FullPath { get; set; }
@@ -77,7 +75,7 @@ namespace DonkeySuite.DesktopMonitor.Domain.Model
 
         public virtual bool IsInBaseDirectory(String directory)
         {
-            var tmp = _path.Combine(directory, FileName);
+            var tmp = _environmentUtility.CombinePath(directory, FileName);
             return tmp.Equals(FullPath);
         }
 
@@ -87,15 +85,7 @@ namespace DonkeySuite.DesktopMonitor.Domain.Model
             var lastDirSeparator = oldPath.LastIndexOf(_environmentUtility.DirectorySeparatorChar);
             var baseDir = oldPath.Substring(0, lastDirSeparator);
 
-            // try
-            // {
-                var newPath = SortStrategy.NewFileName(baseDir, FileName);
-            // }
-            // catch (ActivationException ex)
-            // {
-                // _log.Debug("Activation exception on SortStrategy", ex);
-                // throw new InvalidOperationException("Sort strategy is not set.");
-            // }
+            var newPath = SortStrategy.NewFileName(baseDir, FileName);
 
             if (_file.Exists(newPath))
             {

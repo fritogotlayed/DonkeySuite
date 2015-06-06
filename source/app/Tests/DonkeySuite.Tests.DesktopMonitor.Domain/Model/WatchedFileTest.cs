@@ -22,7 +22,6 @@ namespace DonkeySuite.Tests.DesktopMonitor.Domain.Model
             public Mock<IRequestProvider> MockRequestProvider { get; private set; }
             public Mock<IEnvironmentUtility> MockEnvironmentUtility { get; private set; }
             public Mock<IDirectory> MockDirectory { get; private set; }
-            public Mock<IPath> MockPath { get; private set; }
             public WatchedFile WatchedFile { get; private set; }
 
             public WatchedFileTestBundle()
@@ -33,8 +32,7 @@ namespace DonkeySuite.Tests.DesktopMonitor.Domain.Model
                 MockRequestProvider = new Mock<IRequestProvider>();
                 MockEnvironmentUtility = new Mock<IEnvironmentUtility>();
                 MockDirectory = new Mock<IDirectory>();
-                MockPath = new Mock<IPath>();
-                WatchedFile = new WatchedFile(MockLog.Object, MockServiceLocator.Object, MockFile.Object, MockRequestProvider.Object, MockEnvironmentUtility.Object, MockDirectory.Object, MockPath.Object);
+                WatchedFile = new WatchedFile(MockLog.Object, MockServiceLocator.Object, MockFile.Object, MockRequestProvider.Object, MockEnvironmentUtility.Object, MockDirectory.Object);
             }
         }
 
@@ -145,7 +143,7 @@ namespace DonkeySuite.Tests.DesktopMonitor.Domain.Model
 
             testBundle.WatchedFile.FileName = fileName;
             testBundle.WatchedFile.FullPath = fullPath;
-            testBundle.MockPath.Setup(x => x.Combine(baseDirectory, fileName)).Returns("C:\\foo.txt");
+            testBundle.MockEnvironmentUtility.Setup(x => x.CombinePath(baseDirectory, fileName)).Returns("C:\\foo.txt");
 
             // Act
             var rslt = testBundle.WatchedFile.IsInBaseDirectory(baseDirectory);
@@ -165,7 +163,7 @@ namespace DonkeySuite.Tests.DesktopMonitor.Domain.Model
 
             testBundle.WatchedFile.FileName = fileName;
             testBundle.WatchedFile.FullPath = fullPath;
-            testBundle.MockPath.Setup(x => x.Combine(baseDirectory, fileName)).Returns("C:\\foo.txt");
+            testBundle.MockEnvironmentUtility.Setup(x => x.CombinePath(baseDirectory, fileName)).Returns("C:\\foo.txt");
 
             // Act
             var rslt = testBundle.WatchedFile.IsInBaseDirectory(baseDirectory);

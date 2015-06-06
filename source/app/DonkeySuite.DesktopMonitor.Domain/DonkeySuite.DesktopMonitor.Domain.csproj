@@ -43,6 +43,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Model\ILogProvider.cs" />
     <Compile Include="Model\Providers\IRequestProvider.cs" />
     <Compile Include="Model\Providers\IServiceLocator.cs" />
     <Compile Include="Model\EnvironmentUtility.cs" />

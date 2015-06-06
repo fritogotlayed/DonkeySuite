@@ -1,7 +1,10 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Net;
+using DonkeySuite.DesktopMonitor.Domain.Model;
 using DonkeySuite.DesktopMonitor.Domain.Model.Requests;
+using log4net;
 using Moq;
 using NUnit.Framework;
 using MadDonkeySoftware.SystemWrappers.Net;
@@ -13,13 +16,30 @@ namespace DonkeySuite.Tests.DesktopMonitor.Domain.Model.Requests
     {
         private class BaseRequestTestBundle
         {
+            private BaseRequest _baseRequest;
             public Mock<IWebRequestFactory> MockWebRequestFactory { get; private set; }
-            public BaseRequest BaseRequest { get; private set; }
+            public Mock<ILogProvider> MockLogProvider { get; private set; }
+            public BaseRequest BaseRequest
+            {
+                get { return _baseRequest ?? (_baseRequest = new TestRequest(MockWebRequestFactory.Object, MockLogProvider.Object)); }
+            }
+
+            private class TestRequest : BaseRequest
+            {
+                public TestRequest(IWebRequestFactory webRequestFactory, ILogProvider logProvider) : base(webRequestFactory, logProvider)
+                {
+                }
+
+                protected override void PopulateRequestParameters(Dictionary<string, string> parameters)
+                {
+                    parameters.Add("key", "value");
+                }
+            }
 
             public BaseRequestTestBundle()
             {
                 MockWebRequestFactory = new Mock<IWebRequestFactory>();
-                BaseRequest = new AddImageRequest(MockWebRequestFactory.Object) {FileBytes = new byte[] {1, 2, 3}, FileName = "Test.foo", RequestUrl = "http://google.com/"};
+                MockLogProvider = new Mock<ILogProvider>();
             }
         }
 
@@ -34,18 +54,16 @@ namespace DonkeySuite.Tests.DesktopMonitor.Domain.Model.Requests
         {
             // Arrange
             var testBundle = new BaseRequestTestBundle();
-            var mockWebRequest = new Mock<IWebRequest>(MockBehavior.Strict);
-            var mockResponse = new Mock<IHttpWebResponse>(MockBehavior.Strict);
+            var mockWebRequest = new Mock<IWebRequest>();
+            var mockResponse = new Mock<IHttpWebResponse>();
+            var mockLog = new Mock<ILog>();
 
-            mockWebRequest.SetupSet(x => x.Method = "POST");
-            mockWebRequest.SetupSet(x => x.ContentType = "application/x-www-form-urlencoded");
-            mockWebRequest.SetupSet(x => x.ContentLength = 30);
+            testBundle.MockWebRequestFactory.Setup(x => x.Create(It.IsAny<string>())).Returns(mockWebRequest.Object);
+            testBundle.MockLogProvider.Setup(x => x.GetLogger(It.IsAny<Type>())).Returns(mockLog.Object);
+
             mockWebRequest.Setup(x => x.GetRequestStream()).Returns(new MemoryStream());
             mockWebRequest.Setup(x => x.GetResponse()).Returns(mockResponse.Object);
-            testBundle.MockWebRequestFactory.Setup(x => x.Create(It.IsAny<string>())).Returns(mockWebRequest.Object);
-            // WebRequestFactory.AddWebRequestMock(mockWebRequest.Object);
 
-            mockResponse.Setup(x => x.StatusDescription).Returns("OK");
             mockResponse.Setup(x => x.StatusCode).Returns(HttpStatusCode.OK);
             mockResponse.Setup(x => x.GetResponseStream()).Returns(new MemoryStream());
 
@@ -54,6 +72,9 @@ namespace DonkeySuite.Tests.DesktopMonitor.Domain.Model.Requests
 
             // Assert
             Assert.AreEqual(true, result);
+            mockWebRequest.VerifySet(x => x.Method = "POST");
+            mockWebRequest.VerifySet(x => x.ContentType = "application/x-www-form-urlencoded");
+            mockWebRequest.VerifySet(x => x.ContentLength = 9);
         }
 
         [Test]
@@ -61,16 +82,15 @@ namespace DonkeySuite.Tests.DesktopMonitor.Domain.Model.Requests
         {
             // Arrange
             var testBundle = new BaseRequestTestBundle();
-            var mockWebRequest = new Mock<IWebRequest>(MockBehavior.Strict);
-            var mockResponse = new Mock<IHttpWebResponse>(MockBehavior.Strict);
+            var mockWebRequest = new Mock<IWebRequest>();
+            var mockResponse = new Mock<IHttpWebResponse>();
+            var mockLog = new Mock<ILog>();
 
-            mockWebRequest.SetupSet(x => x.Method = "POST");
-            mockWebRequest.SetupSet(x => x.ContentType = "application/x-www-form-urlencoded");
-            mockWebRequest.SetupSet(x => x.ContentLength = 30);
+            testBundle.MockLogProvider.Setup(x => x.GetLogger(It.IsAny<Type>())).Returns(mockLog.Object);
+
             mockWebRequest.Setup(x => x.GetRequestStream()).Returns(new MemoryStream());
             mockWebRequest.Setup(x => x.GetResponse()).Returns(mockResponse.Object);
             testBundle.MockWebRequestFactory.Setup(x => x.Create(It.IsAny<string>())).Returns(mockWebRequest.Object);
-            // WebRequestFactory.AddWebRequestMock(mockWebRequest.Object);
 
             mockResponse.Setup(x => x.StatusDescription).Returns("BadRequest");
             mockResponse.Setup(x => x.StatusCode).Returns(HttpStatusCode.BadRequest);
@@ -81,6 +101,29 @@ namespace DonkeySuite.Tests.DesktopMonitor.Domain.Model.Requests
 
             // Assert
             Assert.AreEqual(false, result);
+            mockWebRequest.VerifySet(x => x.Method = "POST");
+            mockWebRequest.VerifySet(x => x.ContentType = "application/x-www-form-urlencoded");
+            mockWebRequest.VerifySet(x => x.ContentLength = 9);
+        }
+
+        [Test]
+        public void BaseRequest_Post_ExceptionThrownReturnsFalseAndLogsMessage()
+        {
+            // Arrange
+            var testBundle = new BaseRequestTestBundle();
+            var testException = new WebException("Test exception.");
+            var mockLog = new Mock<ILog>();
+
+            testBundle.MockWebRequestFactory.Setup(x => x.Create(It.IsAny<string>())).Throws(testException);
+            testBundle.MockLogProvider.Setup(x => x.GetLogger(It.IsAny<Type>())).Returns(mockLog.Object);
+
+            // Act
+            var result = testBundle.BaseRequest.Post();
+
+            // Assert
+            Assert.AreEqual(false, result);
+            const string message = "Failed posting to server.";
+            mockLog.Verify(x => x.Error(It.Is<string>(y => y.StartsWith(message)), It.IsAny<WebException>()), Times.Once);
         }
     }
 }

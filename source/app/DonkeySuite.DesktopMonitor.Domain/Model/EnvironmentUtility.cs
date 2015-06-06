@@ -28,5 +28,10 @@ namespace DonkeySuite.DesktopMonitor.Domain.Model
         {
             get { return _environment.IsWindowsPlatform; }
         }
+
+        public string CombinePath(string path1, string path2)
+        {
+            return _path.Combine(path1, path2);
+        }
     }
 }
