@@ -41,32 +41,18 @@ namespace DonkeySuite.DesktopMonitor.Domain.Model
 
         public virtual byte[] LoadImageBytes()
         {
-            if (_log.IsInfoEnabled)
-            {
-                _log.InfoFormat("Beginning LoadImage: \"{0}\"", FullPath);
-            }
-            else
-            {
-                _log.Debug("Beginning LoadImage method.");
-            }
+            _log.DebugFormat("Beginning LoadImage: \"{0}\"", FullPath);
 
             var data = _file.ReadAllBytes(FullPath);
 
-            if (_log.IsInfoEnabled)
-            {
-                _log.InfoFormat("Returning LoadImage: \"{0}\"", FullPath);
-            }
-            else
-            {
-                _log.Debug("Returning LoadImage result.");
-            }
+            _log.DebugFormat("Returning LoadImage: \"{0}\"", FullPath);
 
             return data;
         }
 
         public virtual void SendToServer()
         {
-            _log.InfoFormat("Transmitting image: {0}", FullPath);
+            _log.DebugFormat("Transmitting image: {0}", FullPath);
 
             var req = _requestProvider.ProvideNewAddImageRequest(FileName, LoadImageBytes());
 
@@ -89,11 +75,11 @@ namespace DonkeySuite.DesktopMonitor.Domain.Model
 
             if (_file.Exists(newPath))
             {
-                _log.InfoFormat("Moving file failed due to existing file in destination. File name: {0}", FileName);
+                _log.DebugFormat("Moving file failed due to existing file in destination. File name: {0}", FileName);
             }
             else
             {
-                _log.InfoFormat("Renaming file. From: {0} To: {1}", oldPath, newPath);
+                _log.DebugFormat("Renaming file. From: {0} To: {1}", oldPath, newPath);
 
                 lastDirSeparator = newPath.LastIndexOf(_environmentUtility.DirectorySeparatorChar);
                 _directory.CreateDirectory(newPath.Substring(0, lastDirSeparator));

@@ -64,13 +64,12 @@ namespace DonkeySuite.Tests.DesktopMonitor.Domain.Model
         }
 
         [Test]
-        public void WatchedFileLoadImageBytesReturnsFileDataWithInfoLogging()
+        public void WatchedFileLoadImageBytesReturnsFileDataWithDebugLogging()
         {
             // Arrange
             const string filePath = "/foo/bar/blah.txt";
             var testBundle = new WatchedFileTestBundle();
 
-            testBundle.MockLog.SetupGet(x => x.IsInfoEnabled).Returns(true);
             testBundle.MockFile.Setup(x => x.ReadAllBytes(filePath)).Returns(new byte[] {1, 4, 3});
             testBundle.WatchedFile.FileName = "blah.txt";
             testBundle.WatchedFile.FullPath = filePath;
@@ -81,32 +80,8 @@ namespace DonkeySuite.Tests.DesktopMonitor.Domain.Model
             // Assert
             Assert.IsNotNull(fileBytes);
             Assert.AreEqual(3, fileBytes.Length);
-            testBundle.MockLog.VerifyGet(x => x.IsInfoEnabled, Times.Exactly(2));
-            testBundle.MockLog.Verify(x => x.InfoFormat("Beginning LoadImage: \"{0}\"", "/foo/bar/blah.txt"), Times.Once);
-            testBundle.MockLog.Verify(x => x.InfoFormat("Returning LoadImage: \"{0}\"", "/foo/bar/blah.txt"), Times.Once);
-        }
-
-        [Test]
-        public void WatchedFileLoadImageBytesReturnsFileDataWithoutInfoLogging()
-        {
-            // Arrange
-            const string filePath = "/foo/bar/blah.txt";
-            var testBundle = new WatchedFileTestBundle();
-
-            testBundle.MockLog.SetupGet(x => x.IsInfoEnabled).Returns(false);
-            testBundle.MockFile.Setup(x => x.ReadAllBytes(filePath)).Returns(new byte[] {1, 4, 3});
-            testBundle.WatchedFile.FileName = "blah.txt";
-            testBundle.WatchedFile.FullPath = filePath;
-
-            // Act
-            var fileBytes = testBundle.WatchedFile.LoadImageBytes();
-
-            // Assert
-            Assert.IsNotNull(fileBytes);
-            Assert.AreEqual(3, fileBytes.Length);
-            testBundle.MockLog.VerifyGet(x => x.IsInfoEnabled, Times.Exactly(2));
-            testBundle.MockLog.Verify(x => x.Debug("Beginning LoadImage method."), Times.Once);
-            testBundle.MockLog.Verify(x => x.Debug("Returning LoadImage result."), Times.Once);
+            testBundle.MockLog.Verify(x => x.DebugFormat("Beginning LoadImage: \"{0}\"", "/foo/bar/blah.txt"), Times.Once);
+            testBundle.MockLog.Verify(x => x.DebugFormat("Returning LoadImage: \"{0}\"", "/foo/bar/blah.txt"), Times.Once);
         }
 
         [Test]
@@ -129,7 +104,7 @@ namespace DonkeySuite.Tests.DesktopMonitor.Domain.Model
 
             // Assert
             Assert.AreEqual(true, testBundle.WatchedFile.UploadSuccessful);
-            testBundle.MockLog.Verify(x => x.InfoFormat("Transmitting image: {0}", "/foo/bar/testFile.txt"), Times.Once);
+            testBundle.MockLog.Verify(x => x.DebugFormat("Transmitting image: {0}", "/foo/bar/testFile.txt"), Times.Once);
         }
 
         [Test]
@@ -217,7 +192,7 @@ namespace DonkeySuite.Tests.DesktopMonitor.Domain.Model
             testBundle.WatchedFile.SortFile();
 
             // Assert
-            testBundle.MockLog.Verify(x => x.InfoFormat("Moving file failed due to existing file in destination. File name: {0}", "bar.txt"), Times.Once);
+            testBundle.MockLog.Verify(x => x.DebugFormat("Moving file failed due to existing file in destination. File name: {0}", "bar.txt"), Times.Once);
         }
 
         [Test]
@@ -241,9 +216,17 @@ namespace DonkeySuite.Tests.DesktopMonitor.Domain.Model
             testBundle.WatchedFile.SortFile();
 
             // Assert
-            testBundle.MockLog.Verify(x => x.InfoFormat("Renaming file. From: {0} To: {1}", "/foo/bar.txt", "/foo/b/bar.txt"), Times.Once);
+            testBundle.MockLog.Verify(x => x.DebugFormat("Renaming file. From: {0} To: {1}", "/foo/bar.txt", "/foo/b/bar.txt"), Times.Once);
             testBundle.MockDirectory.Verify(x => x.CreateDirectory("/foo/b"), Times.Once);
             testBundle.MockFile.Verify(x => x.Move("/foo/bar.txt", "/foo/b/bar.txt"), Times.Once);
+        }
+
+        [Test]
+        public void WatchedFileParameterlessConstructorCreatesObject()
+        {
+            // I know this test may seem silly but NHibernate requires a parameterless constructor on objects it persists.
+            var obj = new WatchedFile();
+            Assert.IsNotNull(obj);
         }
     }
 }

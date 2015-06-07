@@ -77,7 +77,7 @@ namespace DonkeySuite.DesktopMonitor.Domain.Model
 
                     if (image.IsInBaseDirectory(_directory) && (_mode.Equals(OperationMode.SortOnly) || _mode.Equals(OperationMode.UploadAndSort)))
                     {
-                        Log.Info(string.Format("Beginning sort of file: {0}", image.FullPath));
+                        Log.Debug(string.Format("Beginning sort of file: {0}", image.FullPath));
                         image.SortFile();
                     }
                 }

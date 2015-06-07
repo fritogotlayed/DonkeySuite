@@ -9,6 +9,7 @@ using DonkeySuite.DesktopMonitor.Domain.Model.SortStrategies;
 using log4net;
 using MadDonkeySoftware.SystemWrappers;
 using MadDonkeySoftware.SystemWrappers.IO;
+using MadDonkeySoftware.SystemWrappers.Net;
 using MadDonkeySoftware.SystemWrappers.Threading;
 using MadDonkeySoftware.SystemWrappers.Xml.Serialization;
 using Ninject;
@@ -65,6 +66,7 @@ namespace DonkeySuite.DesktopMonitor.Wpf
             kernel.Bind<IEnvironment>().To<EnvironmentWrapper>().InTransientScope();
             kernel.Bind<IEnvironmentUtility>().To<EnvironmentUtility>().InTransientScope();
             kernel.Bind<IFile>().To<FileWrapper>().InTransientScope();
+            kernel.Bind<ILogProvider>().To<LogProvider>();
             kernel.Bind<ILog>().ToMethod(context => LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType));
             kernel.Bind<IPath>().To<PathWrapper>().InTransientScope();
             kernel.Bind<IRequestProvider>().To<RequestProvider>().InTransientScope();
@@ -72,6 +74,7 @@ namespace DonkeySuite.DesktopMonitor.Wpf
                 .WithConstructorArgument("initialCount", 1)
                 .WithConstructorArgument("maximumCount", 1);
             kernel.Bind<IServiceLocator>().To<ServiceLocator>();
+            kernel.Bind<IWebRequestFactory>().To<WebRequestFactory>();
             kernel.Bind<IXmlSerializer>()
                 .To<XmlSerializerWrapper>()
                 .InTransientScope()
