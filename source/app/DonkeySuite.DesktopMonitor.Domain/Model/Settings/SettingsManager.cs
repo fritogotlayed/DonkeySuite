@@ -10,7 +10,7 @@ using MadDonkeySoftware.SystemWrappers.Xml.Serialization;
 
 namespace DonkeySuite.DesktopMonitor.Domain.Model.Settings
 {
-    public class SettingsManager
+    public class SettingsManager : ISettingsManager
     {
         private readonly ILog _log;
         private readonly ISemaphore _available;

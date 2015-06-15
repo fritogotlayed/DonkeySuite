@@ -6,11 +6,11 @@ namespace DonkeySuite.DesktopMonitor.Domain.Model.Providers
 {
     public class RequestProvider : IRequestProvider
     {
-        private readonly SettingsManager _settingsManager;
+        private readonly ISettingsManager _settingsManager;
         private readonly IWebRequestFactory _webRequestFactory;
         private readonly ILogProvider _logProvider;
 
-        public RequestProvider(SettingsManager settingsManager, IWebRequestFactory webRequestFactory, ILogProvider logProvider)
+        public RequestProvider(ISettingsManager settingsManager, IWebRequestFactory webRequestFactory, ILogProvider logProvider)
         {
             _settingsManager = settingsManager;
             _webRequestFactory = webRequestFactory;

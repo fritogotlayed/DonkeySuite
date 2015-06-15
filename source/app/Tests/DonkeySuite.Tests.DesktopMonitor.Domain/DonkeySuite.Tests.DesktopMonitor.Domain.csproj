@@ -56,6 +56,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DependencyManagerTest.cs" />
+    <Compile Include="Model\EnvironmentUtilityTest.cs" />
+    <Compile Include="Model\LogProviderTest.cs" />
+    <Compile Include="Model\Providers\RequestProviderTest.cs" />
     <Compile Include="Model\Requests\WebRequestFactoryTests.cs" />
     <Compile Include="Model\SortStrategies\SimpleSortStrategyTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

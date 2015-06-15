@@ -56,6 +56,7 @@
     <Compile Include="Model\Requests\IAddImageRequest.cs" />
     <Compile Include="Model\Requests\IBaseRequest.cs" />
     <Compile Include="Model\Settings\ImageServer.cs" />
+    <Compile Include="Model\Settings\ISettingsManager.cs" />
     <Compile Include="Model\Settings\OperationMode.cs" />
     <Compile Include="Model\Settings\SettingsRoot.cs" />
     <Compile Include="Model\Settings\SettingsManager.cs" />
