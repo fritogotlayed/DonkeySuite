@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using DonkeySuite.DesktopMonitor.Domain.Model.Providers;
@@ -12,35 +11,26 @@ namespace DonkeySuite.DesktopMonitor.Domain.Model
 {
     public class WatchedDirectory
     {
-        private string _directory;
+        private string _watchPath;
         private bool _includeSubDirectories;
         private OperationMode _mode;
-        private static readonly ILog Log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
-        private List<WatchedFile> _imageFiles;
+        private readonly ILog _log;
         private readonly List<string> _acceptableExtensions;
         private ISortStrategy _sortStrategy;
-        private IServiceLocator _serviceLocator;
+        private readonly IServiceLocator _serviceLocator;
+        private readonly IDirectoryScanner _directoryScanner;
 
-        public WatchedDirectory()
-        {
-            _acceptableExtensions = new List<string>();
-        }
-
-        public WatchedDirectory(IServiceLocator serviceLocator) : this()
+        public WatchedDirectory(IServiceLocator serviceLocator, ILogProvider logProvider, IDirectoryScanner directoryScanner)
         {
             _serviceLocator = serviceLocator;
+            _log = logProvider.GetLogger(GetType());
+            _acceptableExtensions = new List<string>();
+            _directoryScanner = directoryScanner;
         }
 
-        /*
-        public WatchedDirectory(string directory) : this()
+        public void Configure(IWatchDirectory watchDir)
         {
-            this._directory = directory;
-        }
-        */
-
-        public void Configure(WatchDirectory watchDir)
-        {
-            _directory = watchDir.Path;
+            _watchPath = watchDir.Path;
             _includeSubDirectories = watchDir.IncludeSubDirectories;
             _mode = watchDir.Mode;
 
@@ -63,7 +53,7 @@ namespace DonkeySuite.DesktopMonitor.Domain.Model
 
         public void ProcessAvailableImages(IWatchedFileRepository watchedFileRepository)
         {
-            var images = GetAvailableImages(watchedFileRepository);
+            var images = _directoryScanner.GetAvailableImages(watchedFileRepository, _watchPath, _acceptableExtensions, _includeSubDirectories, _sortStrategy);
 
             foreach (var image in images.Where(image => image != null))
             {
@@ -75,9 +65,9 @@ namespace DonkeySuite.DesktopMonitor.Domain.Model
                         watchedFileRepository.Save(image);
                     }
 
-                    if (image.IsInBaseDirectory(_directory) && (_mode.Equals(OperationMode.SortOnly) || _mode.Equals(OperationMode.UploadAndSort)))
+                    if (image.IsInBaseDirectory(_watchPath) && (_mode.Equals(OperationMode.SortOnly) || _mode.Equals(OperationMode.UploadAndSort)))
                     {
-                        Log.Debug(string.Format("Beginning sort of file: {0}", image.FullPath));
+                        _log.Debug(string.Format("Beginning sort of file: {0}", image.FullPath));
                         image.SortFile();
                     }
                 }
@@ -85,65 +75,9 @@ namespace DonkeySuite.DesktopMonitor.Domain.Model
                 {
                     image.UploadSuccessful = false;
                     watchedFileRepository.Save(image);
-                    Log.Error("Failed: " + image, ex);
+                    _log.Error("Failed: " + image, ex);
                 }
             }
-        }
-
-        private List<WatchedFile> GetAvailableImages(IWatchedFileRepository watchedFileRepository)
-        {
-            Log.DebugFormat("Beginning to list available images: {0}", _directory);
-
-            _imageFiles = new List<WatchedFile>();
-
-            PopulateFilesForFolder(watchedFileRepository, _imageFiles, _directory);
-
-            Log.DebugFormat("Returning list of available images: {0} with count {1}", _directory, _imageFiles.Count);
-
-            return _imageFiles;
-        }
-
-        private void PopulateFilesForFolder(IWatchedFileRepository watchedFileRepository, List<WatchedFile> fileList, String path)
-        {
-            Log.DebugFormat("populating files and subfiles in {0}", path);
-
-            foreach (var file in Directory.GetFiles(path).Where(f => _acceptableExtensions.Contains(Path.GetExtension(f))))
-            {
-                var watchedFile = watchedFileRepository.LoadFileForPath(file);
-                Log.DebugFormat("Processing file {0}", file);
-
-                // If we can't find the file then create it
-                if (watchedFile == null)
-                {
-                    watchedFile = watchedFileRepository.CreateNew();
-                    watchedFile.FullPath = file;
-                    watchedFile.FileName = Path.GetFileName(file);
-                    watchedFile.UploadSuccessful = false;
-                }
-                else
-                {
-                    // This is a hack until I can get things fully dependency injected.
-                    var tmp = watchedFile;
-                    watchedFile = watchedFileRepository.CreateNew();
-                    watchedFile.FullPath = tmp.FullPath;
-                    watchedFile.FileName = tmp.FileName;
-                    watchedFile.UploadSuccessful = tmp.UploadSuccessful;
-                }
-
-
-                // Ensure each file has the correct sort strategy in-case it has changed.
-                watchedFile.SortStrategy = _sortStrategy;
-                fileList.Add(watchedFile);
-            }
-
-            if (_includeSubDirectories)
-            {
-                foreach (var directory in Directory.GetDirectories(path))
-                {
-                    PopulateFilesForFolder(watchedFileRepository, fileList, directory);
-                }
-            }
-
         }
     }
 }

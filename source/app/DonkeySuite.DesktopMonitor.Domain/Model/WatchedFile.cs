@@ -6,7 +6,7 @@ using MadDonkeySoftware.SystemWrappers.IO;
 
 namespace DonkeySuite.DesktopMonitor.Domain.Model
 {
-    public class WatchedFile
+    public class WatchedFile : IWatchedFile
     {
         private ISortStrategy _sortStrategy;
         private readonly ILog _log;

@@ -56,6 +56,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DependencyManagerTest.cs" />
+    <Compile Include="Model\DirectoryScannerTest.cs" />
     <Compile Include="Model\EnvironmentUtilityTest.cs" />
     <Compile Include="Model\LogProviderTest.cs" />
     <Compile Include="Model\Providers\RequestProviderTest.cs" />

@@ -14,17 +14,17 @@ namespace DonkeySuite.DesktopMonitor.Wpf.Repositories
             _kernel = kernel;
         }
 
-        public WatchedFile CreateNew()
+        public IWatchedFile CreateNew()
         {
-            return _kernel.Get<WatchedFile>();
+            return _kernel.Get<IWatchedFile>();
         }
 
-        public WatchedFile LoadFileForPath(string filePath)
+        public IWatchedFile LoadFileForPath(string filePath)
         {
-            return Session.Get<WatchedFile>(filePath);
+            return Session.Get<IWatchedFile>(filePath);
         }
 
-        public void Save(WatchedFile watchedFile)
+        public void Save(IWatchedFile watchedFile)
         {
             Session.Save(watchedFile);
         }

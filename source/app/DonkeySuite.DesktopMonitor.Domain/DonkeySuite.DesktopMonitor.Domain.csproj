@@ -43,7 +43,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Model\DirectoryScanner.cs" />
+    <Compile Include="Model\IDirectoryScanner.cs" />
     <Compile Include="Model\ILogProvider.cs" />
+    <Compile Include="Model\IWatchedFile.cs" />
     <Compile Include="Model\LogProvider.cs" />
     <Compile Include="Model\Providers\IRequestProvider.cs" />
     <Compile Include="Model\Providers\IServiceLocator.cs" />
@@ -57,6 +60,7 @@
     <Compile Include="Model\Requests\IBaseRequest.cs" />
     <Compile Include="Model\Settings\ImageServer.cs" />
     <Compile Include="Model\Settings\ISettingsManager.cs" />
+    <Compile Include="Model\Settings\IWatchDirectory.cs" />
     <Compile Include="Model\Settings\OperationMode.cs" />
     <Compile Include="Model\Settings\SettingsRoot.cs" />
     <Compile Include="Model\Settings\SettingsManager.cs" />

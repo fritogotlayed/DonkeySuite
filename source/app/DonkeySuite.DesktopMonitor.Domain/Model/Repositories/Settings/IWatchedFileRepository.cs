@@ -2,8 +2,8 @@
 {
     public interface IWatchedFileRepository
     {
-        WatchedFile CreateNew();
-        WatchedFile LoadFileForPath(string filePath);
-        void Save(WatchedFile image);
+        IWatchedFile CreateNew();
+        IWatchedFile LoadFileForPath(string filePath);
+        void Save(IWatchedFile image);
     }
 }

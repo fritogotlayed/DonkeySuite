@@ -1,4 +1,3 @@
-using System;
 using DonkeySuite.DesktopMonitor.Domain.Model;
 using DonkeySuite.DesktopMonitor.Domain.Model.Providers;
 using DonkeySuite.DesktopMonitor.Domain.Model.Requests;

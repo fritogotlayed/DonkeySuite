@@ -1,115 +1,96 @@
-/*
-package com.maddonkeysoftware.donkeydesktopmonitor.model;
+using System.Collections.Generic;
+using DonkeySuite.DesktopMonitor.Domain.Model;
+using DonkeySuite.DesktopMonitor.Domain.Model.Providers;
+using DonkeySuite.DesktopMonitor.Domain.Model.Repositories.Settings;
+using DonkeySuite.DesktopMonitor.Domain.Model.Settings;
+using DonkeySuite.DesktopMonitor.Domain.Model.SortStrategies;
+using Moq;
+using NUnit.Framework;
 
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
+namespace DonkeySuite.Tests.DesktopMonitor.Domain.Model
+{
+    [TestFixture]
+    public class WatchedDirectoryTests
+    {
+        private class WatchedDirectoryTestBundle
+        {
+            private WatchedDirectory _watchedDirectory;
 
-import java.io.File;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
-import java.util.Arrays;
+            public Mock<ILogProvider> MockLogProvider { get; private set; }
+            public Mock<IServiceLocator> MockServiceLocator { get; private set; }
+            public Mock<IDirectoryScanner> MockDirectoryScanner { get; private set; }
 
-import org.hibernate.Session;
-import org.junit.*;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
+            public WatchedDirectory WatchedDirectory
+            {
+                get { return _watchedDirectory ?? (_watchedDirectory = new WatchedDirectory(MockServiceLocator.Object, MockLogProvider.Object, MockDirectoryScanner.Object)); }
+            }
 
-import com.maddonkeysoftware.donkeydesktopmonitor.ContextProvider;
-import com.maddonkeysoftware.donkeydesktopmonitor.MockBeanProvider;
-import com.maddonkeysoftware.donkeydesktopmonitor.model.settings.OperationMode;
-import com.maddonkeysoftware.donkeydesktopmonitor.model.settings.WatchDirectory;
+            public WatchedDirectoryTestBundle()
+            {
+                MockLogProvider = new Mock<ILogProvider>();
+                MockServiceLocator = new Mock<IServiceLocator>();
+                MockDirectoryScanner = new Mock<IDirectoryScanner>();
+            }
+        }
 
-public class WatchedDirectoryTest {
-    @Before
-    public void setUp() throws Exception {
-        com.maddonkeysoftware.donkeydesktopmonitor.ContextProvider
-                .setContext(new ClassPathXmlApplicationContext("testApplicationContext.xml"));
+        [Test]
+        public void WatchedDirectoryConfigureWhenStrategyNotDefinedPullsValuesFromWatchDirectoryProperly()
+        {
+            // Arrange
+            var testBundle = new WatchedDirectoryTestBundle();
+            var mockWatchDirectory = new Mock<IWatchDirectory>();
+
+            mockWatchDirectory.SetupGet(x => x.FileExtensions).Returns("abc");
+
+            // Act
+            testBundle.WatchedDirectory.Configure(mockWatchDirectory.Object);
+
+            // Assert
+            mockWatchDirectory.VerifyGet(x => x.Path, Times.Once());
+            mockWatchDirectory.VerifyGet(x => x.IncludeSubDirectories, Times.Once());
+            mockWatchDirectory.VerifyGet(x => x.Mode, Times.Once());
+            mockWatchDirectory.VerifyGet(x => x.SortStrategy, Times.Once());
+            mockWatchDirectory.VerifyGet(x => x.FileExtensions, Times.Once());
+        }
+
+        [Test]
+        public void WatchedDirectoryConfigureWhenStrategyDefinedPullsValuesFromWatchDirectoryProperly()
+        {
+            // Arrange
+            var testBundle = new WatchedDirectoryTestBundle();
+            var mockWatchDirectory = new Mock<IWatchDirectory>();
+
+            mockWatchDirectory.SetupGet(x => x.FileExtensions).Returns("abc");
+            mockWatchDirectory.SetupGet(x => x.SortStrategy).Returns("simple");
+
+            // Act
+            testBundle.WatchedDirectory.Configure(mockWatchDirectory.Object);
+
+            // Assert
+            mockWatchDirectory.VerifyGet(x => x.Path, Times.Once());
+            mockWatchDirectory.VerifyGet(x => x.IncludeSubDirectories, Times.Once());
+            mockWatchDirectory.VerifyGet(x => x.Mode, Times.Once());
+            mockWatchDirectory.VerifyGet(x => x.SortStrategy, Times.Once());
+            mockWatchDirectory.VerifyGet(x => x.FileExtensions, Times.Once());
+        }
+
+        [Test]
+        public void WatchedDirectoryProcessAvailableImagesWhenNothingToProcess()
+        {
+            // Arrange
+            var testBundle = new WatchedDirectoryTestBundle();
+            var mockWatchFileRepository = new Mock<IWatchedFileRepository>();
+
+            testBundle.MockDirectoryScanner.Setup(x => x.GetAvailableImages(mockWatchFileRepository.Object, It.IsAny<string>(), It.IsAny<IList<string>>(), It.IsAny<bool>(), It.IsAny<ISortStrategy>()))
+                      .Returns(new List<IWatchedFile>());
+
+            // Act
+            testBundle.WatchedDirectory.ProcessAvailableImages(mockWatchFileRepository.Object);
+
+            // Assert
+            mockWatchFileRepository.Verify(x => x.LoadFileForPath(It.IsAny<string>()), Times.Never);
+            mockWatchFileRepository.Verify(x => x.CreateNew(), Times.Never);
+            mockWatchFileRepository.Verify(x => x.Save(It.IsAny<WatchedFile>()), Times.Never);
+        }
     }
-    
-    @After
-    public void tearDown() throws Exception {
-        System.gc();
-        MockBeanProvider.clear();
-    }
-
-    @Test
-    public final void watchedDirectorySetAndGetWorkProperly() {
-
-        // Arrange
-        String val = "C:\\Directory";
-        String extensions = "jpg,jpeg";
-        WatchedDirectory dir = new WatchedDirectory();
-        WatchDirectory dirConfig = new WatchDirectory();
-        dirConfig.setPath(val);
-        dirConfig.setFileExtensions(extensions);
-        dirConfig.setMode(OperationMode.UploadOnly);
-        dirConfig.setIncludeSubDirectories(true);
-
-        // Act
-        dir.configure(dirConfig);
-
-        // Assert
-        assertEquals(val, dir.getDirectory());
-        assertEquals(true, dir.getSubDirectoriesIncluded());
-        assertEquals(OperationMode.UploadOnly, dir.getMode());
-        assertEquals(new java.util.ArrayList<String>(Arrays.asList(extensions.split(","))), dir.getAcceptableExtensions());
-    }
-    
-    @Test
-    public final void watchedDirectoryProcessAvailableImagesDoesNothingWhenNoImagesFound() {
-
-        // Arrange
-        String val = "C:\\Directory";
-        String extensions = "jpg,jpeg";
-        WatchedDirectory dir = new WatchedDirectory();
-        WatchDirectory dirConfig = new WatchDirectory();
-        dirConfig.setPath(val);
-        dirConfig.setFileExtensions(extensions);
-        dirConfig.setMode(OperationMode.UploadOnly);
-        dirConfig.setIncludeSubDirectories(true);
-        dirConfig.setSortStrategy("Simple");
-        dir.configure(dirConfig);
-
-        Session mockSession = mock(Session.class);
-        File mockCurrentLocation = mock(File.class);
-        when(mockCurrentLocation.listFiles()).thenReturn(new File[0]);
-        MockBeanProvider.enqueueOneArgFile(mockCurrentLocation);
-
-        // Act
-        dir.processAvailableImages(mockSession);
-
-        // Assert
-        assertEquals(val, dir.getDirectory());
-        assertEquals(true, dir.getSubDirectoriesIncluded());
-        assertEquals(OperationMode.UploadOnly, dir.getMode());
-        assertEquals(new java.util.ArrayList<String>(Arrays.asList(extensions.split(","))), dir.getAcceptableExtensions());
-        // verify(mockSession);
-        verify(mockCurrentLocation).listFiles();
-    }
-    
-//    @Test
-//   public final void contextProvider_ReturnsProvidedContextWhenAvailable() {
-//      ClassPathXmlApplicationContext testContext = new ClassPathXmlApplicationContext("testApplicationContext.xml");
-
-//      // Act
-//      ApplicationContext obj1 = ContextProvider.getContext();
-//      com.maddonkeysoftware.donkeydesktopmonitor.ContextProvider.setContext(testContext);
-//      ApplicationContext obj2 = ContextProvider.getContext();
-//      
-//      // Assert
-//      assertNotEquals(obj1, obj2);
-//      assertEquals(testContext, obj2);
-//  }
-
-//  @Test(expected = InvocationTargetException.class)
-//  public final void sessionFactoryProvider_ConstructorThrowsUnsupportedException() 
-//          throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, 
-//          NoSuchMethodException, SecurityException {
-
-//      Constructor<ContextProvider> c = ContextProvider.class.getDeclaredConstructor();
-//      c.setAccessible(true);
-//      ContextProvider u = c.newInstance();
-
-//  }
 }
-*/

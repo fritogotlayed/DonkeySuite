@@ -3,7 +3,7 @@ using MadDonkeySoftware.SystemWrappers;
 
 namespace DonkeySuite.DesktopMonitor.Domain.Model.Settings
 {
-    public class WatchDirectory
+    public class WatchDirectory : IWatchDirectory
     {
         private readonly IEnvironment _environment;
 

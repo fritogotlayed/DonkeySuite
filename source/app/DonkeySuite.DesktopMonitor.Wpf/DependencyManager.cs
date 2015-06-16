@@ -63,6 +63,7 @@ namespace DonkeySuite.DesktopMonitor.Wpf
 
             kernel.Bind<AddImageRequest>().ToSelf().InTransientScope();
             kernel.Bind<IDirectory>().To<DirectoryWrapper>().InTransientScope();
+            kernel.Bind<IDirectoryScanner>().To<DirectoryScanner>().InTransientScope();
             kernel.Bind<IEnvironment>().To<EnvironmentWrapper>().InTransientScope();
             kernel.Bind<IEnvironmentUtility>().To<EnvironmentUtility>().InTransientScope();
             kernel.Bind<IFile>().To<FileWrapper>().InTransientScope();
@@ -74,6 +75,8 @@ namespace DonkeySuite.DesktopMonitor.Wpf
                 .WithConstructorArgument("initialCount", 1)
                 .WithConstructorArgument("maximumCount", 1);
             kernel.Bind<IServiceLocator>().To<ServiceLocator>();
+            kernel.Bind<ISettingsManager>().To<SettingsManager>();
+            kernel.Bind<IWatchedFile>().To<WatchedFile>();
             kernel.Bind<IWebRequestFactory>().To<WebRequestFactory>();
             kernel.Bind<IXmlSerializer>()
                 .To<XmlSerializerWrapper>()
