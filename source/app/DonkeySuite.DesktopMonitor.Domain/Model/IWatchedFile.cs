@@ -13,5 +13,6 @@ namespace DonkeySuite.DesktopMonitor.Domain.Model
         void SendToServer();
         bool IsInBaseDirectory(String directory);
         void SortFile();
+        void RemoveFromDisk();
     }
 }

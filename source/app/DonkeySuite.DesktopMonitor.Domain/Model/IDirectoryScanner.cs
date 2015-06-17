@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using DonkeySuite.DesktopMonitor.Domain.Model.Repositories.Settings;
+using DonkeySuite.DesktopMonitor.Domain.Model.Repositories;
 using DonkeySuite.DesktopMonitor.Domain.Model.SortStrategies;
 
 namespace DonkeySuite.DesktopMonitor.Domain.Model

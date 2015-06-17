@@ -1,4 +1,4 @@
-﻿namespace DonkeySuite.DesktopMonitor.Domain.Model.Repositories.Settings
+﻿namespace DonkeySuite.DesktopMonitor.Domain.Model.Repositories
 {
     public interface IWatchedFileRepository
     {

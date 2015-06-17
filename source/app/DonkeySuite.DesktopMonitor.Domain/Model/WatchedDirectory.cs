@@ -1,8 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using DonkeySuite.DesktopMonitor.Domain.Model.Providers;
-using DonkeySuite.DesktopMonitor.Domain.Model.Repositories.Settings;
+using DonkeySuite.DesktopMonitor.Domain.Model.Repositories;
 using DonkeySuite.DesktopMonitor.Domain.Model.Settings;
 using DonkeySuite.DesktopMonitor.Domain.Model.SortStrategies;
 using log4net;
@@ -59,16 +60,26 @@ namespace DonkeySuite.DesktopMonitor.Domain.Model
             {
                 try
                 {
-                    if (!image.UploadSuccessful && (_mode.Equals(OperationMode.UploadAndClear) || _mode.Equals(OperationMode.UploadOnly) || _mode.Equals(OperationMode.UploadAndSort)))
+                    if (!image.UploadSuccessful
+                        && (_mode.Equals(OperationMode.UploadAndClear) || _mode.Equals(OperationMode.UploadOnly) || _mode.Equals(OperationMode.UploadAndSort)))
                     {
                         image.SendToServer();
                         watchedFileRepository.Save(image);
                     }
 
-                    if (image.IsInBaseDirectory(_watchPath) && (_mode.Equals(OperationMode.SortOnly) || _mode.Equals(OperationMode.UploadAndSort)))
+                    if (image.IsInBaseDirectory(_watchPath)
+                        && (_mode.Equals(OperationMode.SortOnly) || _mode.Equals(OperationMode.UploadAndSort)))
                     {
                         _log.Debug(string.Format("Beginning sort of file: {0}", image.FullPath));
                         image.SortFile();
+                    }
+
+                    if (!image.UploadSuccessful
+                        && !image.IsInBaseDirectory(_watchPath)
+                        && (_mode.Equals(OperationMode.UploadAndClear)))
+                    {
+                        throw new NotImplementedException(); // Don't want to do this just yet since it's destructive.
+                        // image.RemoveFromDisk();
                     }
                 }
                 catch (IOException ex)

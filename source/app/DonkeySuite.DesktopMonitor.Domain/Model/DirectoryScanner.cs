@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using DonkeySuite.DesktopMonitor.Domain.Model.Repositories.Settings;
+using DonkeySuite.DesktopMonitor.Domain.Model.Repositories;
 using DonkeySuite.DesktopMonitor.Domain.Model.SortStrategies;
 using log4net;
 using MadDonkeySoftware.SystemWrappers.IO;

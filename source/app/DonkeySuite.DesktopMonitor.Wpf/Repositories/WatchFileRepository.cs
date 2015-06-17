@@ -1,5 +1,5 @@
 ﻿using DonkeySuite.DesktopMonitor.Domain.Model;
-using DonkeySuite.DesktopMonitor.Domain.Model.Repositories.Settings;
+using DonkeySuite.DesktopMonitor.Domain.Model.Repositories;
 using NHibernate;
 using Ninject;
 

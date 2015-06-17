@@ -8,5 +8,6 @@ namespace MadDonkeySoftware.SystemWrappers.IO
         FileStream Open(string path, FileMode mode);
         byte[] ReadAllBytes(string path);
         void Move(string oldPath, string newPath);
+        void Delete(string path);
     }
 }

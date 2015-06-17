@@ -23,5 +23,10 @@ namespace MadDonkeySoftware.SystemWrappers.IO
         {
             File.Move(sourceFileName, destFileName);
         }
+
+        public void Delete(string path)
+        {
+            File.Delete(path);
+        }
     }
 }
