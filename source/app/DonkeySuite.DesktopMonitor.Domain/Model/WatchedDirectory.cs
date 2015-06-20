@@ -54,6 +54,8 @@ namespace DonkeySuite.DesktopMonitor.Domain.Model
 
         public void ProcessAvailableImages(IWatchedFileRepository watchedFileRepository)
         {
+            if (_mode.Equals(OperationMode.UploadAndClear)) throw new NotImplementedException();
+
             var images = _directoryScanner.GetAvailableImages(watchedFileRepository, _watchPath, _acceptableExtensions, _includeSubDirectories, _sortStrategy);
 
             foreach (var image in images.Where(image => image != null))
@@ -74,13 +76,6 @@ namespace DonkeySuite.DesktopMonitor.Domain.Model
                         image.SortFile();
                     }
 
-                    if (!image.UploadSuccessful
-                        && !image.IsInBaseDirectory(_watchPath)
-                        && (_mode.Equals(OperationMode.UploadAndClear)))
-                    {
-                        throw new NotImplementedException(); // Don't want to do this just yet since it's destructive.
-                        // image.RemoveFromDisk();
-                    }
                 }
                 catch (IOException ex)
                 {

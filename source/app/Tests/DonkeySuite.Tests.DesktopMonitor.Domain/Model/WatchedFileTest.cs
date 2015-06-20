@@ -227,5 +227,19 @@ namespace DonkeySuite.Tests.DesktopMonitor.Domain.Model
             var obj = new WatchedFile();
             Assert.IsNotNull(obj);
         }
+
+        [Test]
+        public void WatchedFileRemoveFromDiskCalls()
+        {
+            // Arrange
+            var testBundle = new WatchedFileTestBundle();
+            testBundle.WatchedFile.FullPath = "/foo.txt";
+
+            // Act
+            testBundle.WatchedFile.RemoveFromDisk();
+
+            // Assert
+            testBundle.MockFile.Verify(x => x.Delete("/foo.txt"), Times.Once);
+        }
     }
 }

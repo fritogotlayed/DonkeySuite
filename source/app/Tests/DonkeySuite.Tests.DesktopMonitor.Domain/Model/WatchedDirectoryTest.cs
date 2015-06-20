@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using DonkeySuite.DesktopMonitor.Domain.Model;
 using DonkeySuite.DesktopMonitor.Domain.Model.Providers;
 using DonkeySuite.DesktopMonitor.Domain.Model.Repositories;
@@ -149,6 +150,79 @@ namespace DonkeySuite.Tests.DesktopMonitor.Domain.Model
             mockWatchedFile.VerifySet(x => x.UploadSuccessful = false, Times.Never);
             mockWatchedFile.Verify(x => x.SendToServer(), Times.Never);
             mockWatchedFile.Verify(x => x.SortFile(), Times.Once);
+            mockWatchedFile.Verify(x => x.RemoveFromDisk(), Times.Never);
+        }
+
+        [Test]
+        public void WatchedDirectoryProcessAvailableImagesWhenImageIsInBaseDirectoryAndModeIsUploadAndClearShouldThrowNotImplementedException()
+        {
+            // Arrange
+            var testBundle = new WatchedDirectoryTestBundle();
+            var watchDirectory = new WatchDirectory {FileExtensions = "abc", Mode = OperationMode.UploadAndClear};
+            var mockWatchedFileRepository = new Mock<IWatchedFileRepository>();
+            var mockWatchedFile = new Mock<IWatchedFile>();
+            var mockLog = new Mock<ILog>();
+            NotImplementedException thrownException = null;
+
+            testBundle.MockDirectoryScanner.Setup(x => x.GetAvailableImages(mockWatchedFileRepository.Object, null, It.IsAny<IList<string>>(), false, null))
+                                           .Returns(new List<IWatchedFile> {mockWatchedFile.Object});
+
+            testBundle.MockLogProvider.Setup(x => x.GetLogger(It.IsAny<Type>())).Returns(mockLog.Object);
+
+            mockWatchedFile.Setup(x => x.IsInBaseDirectory(null)).Returns(true);
+
+            testBundle.WatchedDirectory.Configure(watchDirectory);
+
+            // Act
+            try
+            {
+                testBundle.WatchedDirectory.ProcessAvailableImages(mockWatchedFileRepository.Object);
+            }
+            catch (NotImplementedException ex)
+            {
+                thrownException = ex;
+            }
+
+            // Assert
+            mockWatchedFileRepository.Verify(x => x.LoadFileForPath(It.IsAny<string>()), Times.Never);
+            mockWatchedFileRepository.Verify(x => x.CreateNew(), Times.Never);
+            mockWatchedFileRepository.Verify(x => x.Save(mockWatchedFile.Object), Times.Never);
+            mockWatchedFile.VerifySet(x => x.UploadSuccessful = false, Times.Never);
+            mockWatchedFile.Verify(x => x.SendToServer(), Times.Never);
+            mockWatchedFile.Verify(x => x.SortFile(), Times.Never);
+            mockWatchedFile.Verify(x => x.RemoveFromDisk(), Times.Never);
+            Assert.IsNotNull(thrownException);
+        }
+
+        [Test]
+        public void WatchedDirectoryProcessAvailableImagesWhenIOExceptionThrownShouldSortFile()
+        {
+            // Arrange
+            var testBundle = new WatchedDirectoryTestBundle();
+            var watchDirectory = new WatchDirectory {FileExtensions = "abc", Mode = OperationMode.UploadOnly};
+            var mockWatchedFileRepository = new Mock<IWatchedFileRepository>();
+            var mockWatchedFile = new Mock<IWatchedFile>();
+            var mockLog = new Mock<ILog>();
+
+            testBundle.MockDirectoryScanner.Setup(x => x.GetAvailableImages(mockWatchedFileRepository.Object, null, It.IsAny<IList<string>>(), false, null))
+                                           .Returns(new List<IWatchedFile> {mockWatchedFile.Object});
+
+            testBundle.MockLogProvider.Setup(x => x.GetLogger(It.IsAny<Type>())).Returns(mockLog.Object);
+
+            mockWatchedFile.SetupGet(x => x.UploadSuccessful).Returns(false);
+            mockWatchedFile.Setup(x => x.SendToServer()).Throws(new IOException());
+
+            // Act
+            testBundle.WatchedDirectory.Configure(watchDirectory);
+            testBundle.WatchedDirectory.ProcessAvailableImages(mockWatchedFileRepository.Object);
+
+            // Assert
+            mockWatchedFileRepository.Verify(x => x.LoadFileForPath(It.IsAny<string>()), Times.Never);
+            mockWatchedFileRepository.Verify(x => x.CreateNew(), Times.Never);
+            mockWatchedFileRepository.Verify(x => x.Save(mockWatchedFile.Object), Times.Once);
+            mockWatchedFile.VerifySet(x => x.UploadSuccessful = false, Times.Once);
+            mockWatchedFile.Verify(x => x.SendToServer(), Times.Once);
+            mockWatchedFile.Verify(x => x.SortFile(), Times.Never);
             mockWatchedFile.Verify(x => x.RemoveFromDisk(), Times.Never);
         }
     }
