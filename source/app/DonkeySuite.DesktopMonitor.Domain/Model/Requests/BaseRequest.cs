@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Text;
+using DonkeySuite.DesktopMonitor.Domain.Model.Repositories;
 using log4net;
 using MadDonkeySoftware.SystemWrappers.Net;
 
@@ -11,16 +12,18 @@ namespace DonkeySuite.DesktopMonitor.Domain.Model.Requests
     public abstract class BaseRequest : IBaseRequest
     {
         private readonly IWebRequestFactory _webRequestFactory;
+        private readonly ICredentialRepository _credentialRepository;
         private static ILog _log;
 
         public virtual string RequestUrl { get; set; }
         public virtual string ResponseStatus { get; protected set; }
         public virtual string ResponseData { get; protected set; }
 
-        protected BaseRequest(IWebRequestFactory webRequestFactory, ILogProvider logProvider)
+        protected BaseRequest(IWebRequestFactory webRequestFactory, ILogProvider logProvider, ICredentialRepository credentialRepository)
         {
             _webRequestFactory = webRequestFactory;
             _log = logProvider.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+            _credentialRepository = credentialRepository;
         }
 
         public virtual bool Post()
@@ -31,6 +34,7 @@ namespace DonkeySuite.DesktopMonitor.Domain.Model.Requests
                 var request = _webRequestFactory.Create(RequestUrl);
                 request.Method = "POST";
                 request.ContentType = @"application/x-www-form-urlencoded";
+                request.Headers["X-Auth-Token"] = _credentialRepository.GetApiKey();
 
                 var parameters = new Dictionary<string, string>();
                 PopulateRequestParameters(parameters);

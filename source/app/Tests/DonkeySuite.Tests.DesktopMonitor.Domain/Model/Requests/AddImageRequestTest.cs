@@ -1,6 +1,8 @@
 using System;
 using System.IO;
+using System.Net;
 using DonkeySuite.DesktopMonitor.Domain.Model;
+using DonkeySuite.DesktopMonitor.Domain.Model.Repositories;
 using DonkeySuite.DesktopMonitor.Domain.Model.Requests;
 using log4net;
 using Moq;
@@ -16,16 +18,18 @@ namespace DonkeySuite.Tests.DesktopMonitor.Domain.Model.Requests
             private AddImageRequest _addImageRequest;
             public Mock<IWebRequestFactory> MockWebRequestFactory { get; private set; }
             public Mock<ILogProvider> MockLogProvider { get; private set; }
+            public Mock<ICredentialRepository> MockRequestCredentialProvider { get; private set; }
 
             public AddImageRequest AddImageRequest
             {
-                get { return _addImageRequest ?? (_addImageRequest = new AddImageRequest(MockWebRequestFactory.Object, MockLogProvider.Object)); }
+                get { return _addImageRequest ?? (_addImageRequest = new AddImageRequest(MockWebRequestFactory.Object, MockLogProvider.Object, MockRequestCredentialProvider.Object)); }
             }
 
             public AddImageRequestTestBundle()
             {
                 MockWebRequestFactory = new Mock<IWebRequestFactory>();
                 MockLogProvider = new Mock<ILogProvider>();
+                MockRequestCredentialProvider = new Mock<ICredentialRepository>();
             }
         }
 
@@ -78,6 +82,7 @@ namespace DonkeySuite.Tests.DesktopMonitor.Domain.Model.Requests
             mockWebRequest.SetupSet(x => x.Method = "POST");
             mockWebRequest.SetupSet(x => x.ContentType = "application/x-www-form-urlencoded");
             mockWebRequest.SetupSet(x => x.ContentLength = 30);
+            mockWebRequest.SetupGet(x => x.Headers).Returns(new WebHeaderCollection());
             mockWebRequest.Setup(x => x.GetRequestStream()).Returns(new MemoryStream());
             mockWebRequest.Setup(x => x.GetResponse()).Returns(new Mock<IHttpWebResponse>().Object);
             testBundle.MockWebRequestFactory.Setup(x => x.Create(It.IsAny<string>())).Returns(mockWebRequest.Object);

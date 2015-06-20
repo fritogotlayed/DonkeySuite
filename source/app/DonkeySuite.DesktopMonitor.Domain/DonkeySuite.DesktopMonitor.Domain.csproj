@@ -53,6 +53,7 @@
     <Compile Include="Model\EnvironmentUtility.cs" />
     <Compile Include="Model\IEnvironmentUtility.cs" />
     <Compile Include="Model\Providers\RequestProvider.cs" />
+    <Compile Include="Model\Repositories\ICredentialRepository.cs" />
     <Compile Include="Model\Repositories\IWatchedFileRepository.cs" />
     <Compile Include="Model\Requests\AddImageRequest.cs" />
     <Compile Include="Model\Requests\BaseRequest.cs" />

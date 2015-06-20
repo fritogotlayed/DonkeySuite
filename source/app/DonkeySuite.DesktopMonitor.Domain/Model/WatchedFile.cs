@@ -87,7 +87,7 @@ namespace DonkeySuite.DesktopMonitor.Domain.Model
             }
         }
 
-        public void RemoveFromDisk()
+        public virtual void RemoveFromDisk()
         {
             _file.Delete(FullPath);
         }

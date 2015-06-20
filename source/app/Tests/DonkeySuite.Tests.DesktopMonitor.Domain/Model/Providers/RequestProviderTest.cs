@@ -1,6 +1,7 @@
 ﻿using System;
 using DonkeySuite.DesktopMonitor.Domain.Model;
 using DonkeySuite.DesktopMonitor.Domain.Model.Providers;
+using DonkeySuite.DesktopMonitor.Domain.Model.Repositories;
 using DonkeySuite.DesktopMonitor.Domain.Model.Settings;
 using MadDonkeySoftware.SystemWrappers.Net;
 using Moq;
@@ -18,10 +19,11 @@ namespace DonkeySuite.Tests.DesktopMonitor.Domain.Model.Providers
             public Mock<ISettingsManager> MockSettingsManager { get; private set; }
             public Mock<IWebRequestFactory> MockWebRequestFactory { get; private set; }
             public Mock<ILogProvider> MockLogProvider { get; private set; }
+            public Mock<ICredentialRepository> MockRequestCredentialProvider { get; private set; }
 
             public RequestProvider RequestProvider
             {
-                get { return _requestProvider ?? (_requestProvider = new RequestProvider(MockSettingsManager.Object, MockWebRequestFactory.Object, MockLogProvider.Object)); }
+                get { return _requestProvider ?? (_requestProvider = new RequestProvider(MockSettingsManager.Object, MockWebRequestFactory.Object, MockLogProvider.Object, MockRequestCredentialProvider.Object)); }
             }
 
             public RequestProviderTestBundle()
@@ -29,6 +31,7 @@ namespace DonkeySuite.Tests.DesktopMonitor.Domain.Model.Providers
                 MockSettingsManager = new Mock<ISettingsManager>();
                 MockWebRequestFactory = new Mock<IWebRequestFactory>();
                 MockLogProvider = new Mock<ILogProvider>();
+                MockRequestCredentialProvider = new Mock<ICredentialRepository>();
             }
         }
 

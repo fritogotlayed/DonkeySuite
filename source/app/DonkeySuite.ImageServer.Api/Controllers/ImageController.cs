@@ -3,11 +3,13 @@ using System.Net;
 using System.Net.Http;
 using System.Web.Helpers;
 using System.Web.Http;
+using DonkeySuite.ImageServer.Api.Filters;
 using DonkeySuite.ImageServer.Api.Models;
 using log4net;
 
 namespace DonkeySuite.ImageServer.Api.Controllers
 {
+    [TokenAuthenticationFilter]
     public class ImageController : ApiController
     {
         private static readonly ILog Log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
@@ -25,9 +27,13 @@ namespace DonkeySuite.ImageServer.Api.Controllers
         }
 
         // GET image/5
-        public string Get(int id)
+        public HttpResponseMessage Get(int id)
         {
-            return Json.Encode(new Foo() {Value = id, Name = "Blah"});
+            var responseObject = new Foo {Value = id, Name = "Blah"};
+            return new HttpResponseMessage
+            {
+                Content = new StringContent(Json.Encode(responseObject))
+            };
         }
 
         // POST image

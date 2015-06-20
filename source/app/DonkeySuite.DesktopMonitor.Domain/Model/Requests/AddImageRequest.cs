@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using DonkeySuite.DesktopMonitor.Domain.Model.Repositories;
 using MadDonkeySoftware.SystemWrappers.Net;
 
 namespace DonkeySuite.DesktopMonitor.Domain.Model.Requests
@@ -8,7 +9,7 @@ namespace DonkeySuite.DesktopMonitor.Domain.Model.Requests
     {
         private string _url;
 
-        public AddImageRequest(IWebRequestFactory webRequestFactory, ILogProvider logProvider) : base(webRequestFactory, logProvider)
+        public AddImageRequest(IWebRequestFactory webRequestFactory, ILogProvider logProvider, ICredentialRepository credentialRepository) : base(webRequestFactory, logProvider, credentialRepository)
         {
         }
 

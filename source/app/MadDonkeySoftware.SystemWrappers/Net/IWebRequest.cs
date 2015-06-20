@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using System.Net;
 
 namespace MadDonkeySoftware.SystemWrappers.Net
 {
@@ -9,6 +10,8 @@ namespace MadDonkeySoftware.SystemWrappers.Net
         string ContentType { get; set; }
 
         long ContentLength { get; set; }
+
+        WebHeaderCollection Headers { get; }
 
         Stream GetRequestStream();
 

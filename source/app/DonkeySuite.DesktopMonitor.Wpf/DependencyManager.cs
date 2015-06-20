@@ -3,9 +3,11 @@ using System.IO;
 using System.Xml.Serialization;
 using DonkeySuite.DesktopMonitor.Domain.Model;
 using DonkeySuite.DesktopMonitor.Domain.Model.Providers;
+using DonkeySuite.DesktopMonitor.Domain.Model.Repositories;
 using DonkeySuite.DesktopMonitor.Domain.Model.Requests;
 using DonkeySuite.DesktopMonitor.Domain.Model.Settings;
 using DonkeySuite.DesktopMonitor.Domain.Model.SortStrategies;
+using DonkeySuite.DesktopMonitor.Wpf.Repositories;
 using log4net;
 using MadDonkeySoftware.SystemWrappers;
 using MadDonkeySoftware.SystemWrappers.IO;
@@ -63,6 +65,7 @@ namespace DonkeySuite.DesktopMonitor.Wpf
 
             kernel.Bind<AddImageRequest>().ToSelf().InTransientScope();
             kernel.Bind<IDirectory>().To<DirectoryWrapper>().InTransientScope();
+            kernel.Bind<ICredentialRepository>().To<CredentialRepository>();
             kernel.Bind<IDirectoryScanner>().To<DirectoryScanner>().InTransientScope();
             kernel.Bind<IEnvironment>().To<EnvironmentWrapper>().InTransientScope();
             kernel.Bind<IEnvironmentUtility>().To<EnvironmentUtility>().InTransientScope();

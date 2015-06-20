@@ -30,6 +30,11 @@ namespace MadDonkeySoftware.SystemWrappers.Net
             set { _request.ContentLength = value; }
         }
 
+        public WebHeaderCollection Headers
+        {
+            get { return _request.Headers; }
+        }
+
         public Stream GetRequestStream()
         {
             return _request.GetRequestStream();
@@ -39,5 +44,6 @@ namespace MadDonkeySoftware.SystemWrappers.Net
         {
             return new HttpWebResponseWrapper(_request.GetResponse());
         }
+
     }
 }

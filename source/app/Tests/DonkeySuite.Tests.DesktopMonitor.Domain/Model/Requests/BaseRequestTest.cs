@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using DonkeySuite.DesktopMonitor.Domain.Model;
+using DonkeySuite.DesktopMonitor.Domain.Model.Repositories;
 using DonkeySuite.DesktopMonitor.Domain.Model.Requests;
 using log4net;
 using Moq;
@@ -19,14 +20,15 @@ namespace DonkeySuite.Tests.DesktopMonitor.Domain.Model.Requests
             private BaseRequest _baseRequest;
             public Mock<IWebRequestFactory> MockWebRequestFactory { get; private set; }
             public Mock<ILogProvider> MockLogProvider { get; private set; }
+            public Mock<ICredentialRepository> MockRequestCredentialProvider { get; private set; }
             public BaseRequest BaseRequest
             {
-                get { return _baseRequest ?? (_baseRequest = new TestRequest(MockWebRequestFactory.Object, MockLogProvider.Object)); }
+                get { return _baseRequest ?? (_baseRequest = new TestRequest(MockWebRequestFactory.Object, MockLogProvider.Object, MockRequestCredentialProvider.Object)); }
             }
 
             private class TestRequest : BaseRequest
             {
-                public TestRequest(IWebRequestFactory webRequestFactory, ILogProvider logProvider) : base(webRequestFactory, logProvider)
+                public TestRequest(IWebRequestFactory webRequestFactory, ILogProvider logProvider, ICredentialRepository credentialRepository) : base(webRequestFactory, logProvider, credentialRepository)
                 {
                 }
 
@@ -40,6 +42,7 @@ namespace DonkeySuite.Tests.DesktopMonitor.Domain.Model.Requests
             {
                 MockWebRequestFactory = new Mock<IWebRequestFactory>();
                 MockLogProvider = new Mock<ILogProvider>();
+                MockRequestCredentialProvider = new Mock<ICredentialRepository>();
             }
         }
 
@@ -61,6 +64,7 @@ namespace DonkeySuite.Tests.DesktopMonitor.Domain.Model.Requests
             testBundle.MockWebRequestFactory.Setup(x => x.Create(It.IsAny<string>())).Returns(mockWebRequest.Object);
             testBundle.MockLogProvider.Setup(x => x.GetLogger(It.IsAny<Type>())).Returns(mockLog.Object);
 
+            mockWebRequest.SetupGet(x => x.Headers).Returns(new WebHeaderCollection());
             mockWebRequest.Setup(x => x.GetRequestStream()).Returns(new MemoryStream());
             mockWebRequest.Setup(x => x.GetResponse()).Returns(mockResponse.Object);
 
@@ -88,6 +92,7 @@ namespace DonkeySuite.Tests.DesktopMonitor.Domain.Model.Requests
 
             testBundle.MockLogProvider.Setup(x => x.GetLogger(It.IsAny<Type>())).Returns(mockLog.Object);
 
+            mockWebRequest.SetupGet(x => x.Headers).Returns(new WebHeaderCollection());
             mockWebRequest.Setup(x => x.GetRequestStream()).Returns(new MemoryStream());
             mockWebRequest.Setup(x => x.GetResponse()).Returns(mockResponse.Object);
             testBundle.MockWebRequestFactory.Setup(x => x.Create(It.IsAny<string>())).Returns(mockWebRequest.Object);
