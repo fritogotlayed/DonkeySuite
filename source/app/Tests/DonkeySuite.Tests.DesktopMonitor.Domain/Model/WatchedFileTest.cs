@@ -17,7 +17,7 @@ namespace DonkeySuite.Tests.DesktopMonitor.Domain.Model
         {
             public Mock<ILog> MockLog { get; private set; }
             public Mock<IFile> MockFile { get; private set; }
-            public Mock<IServiceLocator> MockServiceLocator { get; private set; }
+            public Mock<IEntityProvider> MockServiceProvider { get; private set; }
             public Mock<IRequestProvider> MockRequestProvider { get; private set; }
             public Mock<IEnvironmentUtility> MockEnvironmentUtility { get; private set; }
             public Mock<IDirectory> MockDirectory { get; private set; }
@@ -27,11 +27,11 @@ namespace DonkeySuite.Tests.DesktopMonitor.Domain.Model
             {
                 MockLog = new Mock<ILog>();
                 MockFile = new Mock<IFile>();
-                MockServiceLocator = new Mock<IServiceLocator>();
+                MockServiceProvider = new Mock<IEntityProvider>();
                 MockRequestProvider = new Mock<IRequestProvider>();
                 MockEnvironmentUtility = new Mock<IEnvironmentUtility>();
                 MockDirectory = new Mock<IDirectory>();
-                WatchedFile = new WatchedFile(MockLog.Object, MockServiceLocator.Object, MockFile.Object, MockRequestProvider.Object, MockEnvironmentUtility.Object, MockDirectory.Object);
+                WatchedFile = new WatchedFile(MockLog.Object, MockServiceProvider.Object, MockFile.Object, MockRequestProvider.Object, MockEnvironmentUtility.Object, MockDirectory.Object);
             }
         }
 
@@ -56,7 +56,7 @@ namespace DonkeySuite.Tests.DesktopMonitor.Domain.Model
             var testBundle = new WatchedFileTestBundle();
             var strategy = new SimpleSortStrategy();
 
-            testBundle.MockServiceLocator.Setup(x => x.ProvideSortStrategy(null)).Returns(strategy);
+            testBundle.MockServiceProvider.Setup(x => x.ProvideSortStrategy(null)).Returns(strategy);
 
             // Act & Assert
             Assert.AreSame(strategy, testBundle.WatchedFile.SortStrategy);
@@ -153,7 +153,7 @@ namespace DonkeySuite.Tests.DesktopMonitor.Domain.Model
             var testBundle = new WatchedFileTestBundle();
 
             testBundle.MockEnvironmentUtility.SetupGet(x => x.DirectorySeparatorChar).Returns('/');
-            testBundle.MockServiceLocator.Setup(x => x.ProvideSortStrategy(null)).Throws(new ActivationException());
+            testBundle.MockServiceProvider.Setup(x => x.ProvideSortStrategy(null)).Throws(new ActivationException());
 
             // Act
             testBundle.WatchedFile.FullPath = "/foo/bar.txt";

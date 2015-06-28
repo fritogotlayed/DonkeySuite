@@ -19,7 +19,7 @@ namespace DonkeySuite.Tests.DesktopMonitor.Domain.Model
             private WatchedDirectory _watchedDirectory;
 
             public Mock<ILogProvider> MockLogProvider { get; private set; }
-            public Mock<IServiceLocator> MockServiceLocator { get; private set; }
+            public Mock<IEntityProvider> MockServiceLocator { get; private set; }
             public Mock<IDirectoryScanner> MockDirectoryScanner { get; private set; }
 
             public WatchedDirectory WatchedDirectory
@@ -30,7 +30,7 @@ namespace DonkeySuite.Tests.DesktopMonitor.Domain.Model
             public WatchedDirectoryTestBundle()
             {
                 MockLogProvider = new Mock<ILogProvider>();
-                MockServiceLocator = new Mock<IServiceLocator>();
+                MockServiceLocator = new Mock<IEntityProvider>();
                 MockDirectoryScanner = new Mock<IDirectoryScanner>();
             }
         }

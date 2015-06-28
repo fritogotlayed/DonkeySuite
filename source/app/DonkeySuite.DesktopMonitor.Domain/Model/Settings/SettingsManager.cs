@@ -17,11 +17,11 @@ namespace DonkeySuite.DesktopMonitor.Domain.Model.Settings
         private readonly IFile _file;
         private readonly IXmlSerializer _serializer;
         private readonly IEnvironmentUtility _environmentUtility;
-        private readonly IServiceLocator _serviceLocator;
+        private readonly IEntityProvider _entityLocator;
         private const string FileName = "settings.xml";
         private SettingsRoot _settingsRoot;
 
-        public SettingsManager(ILog log, ISemaphore semaphore, IFile file, IXmlSerializer serializer, IEnvironmentUtility environmentUtility, IServiceLocator serviceLocator)
+        public SettingsManager(ILog log, ISemaphore semaphore, IFile file, IXmlSerializer serializer, IEnvironmentUtility environmentUtility, IEntityProvider entityLocator)
         {
             // TODO: Dependency injection feels like it is bloating the constructor. Might be time to re-address the responsibility of this classes methods.
             _log = log;
@@ -29,7 +29,7 @@ namespace DonkeySuite.DesktopMonitor.Domain.Model.Settings
             _file = file;
             _serializer = serializer;
             _environmentUtility = environmentUtility;
-            _serviceLocator = serviceLocator;
+            _entityLocator = entityLocator;
         }
 
         public SettingsRoot GetSettings()
@@ -57,11 +57,11 @@ namespace DonkeySuite.DesktopMonitor.Domain.Model.Settings
                 if (!_file.Exists(path))
                 {
                     _log.Warn(string.Format("Settings file \"{0}\" does not exist. Populating with defaults.", path));
-                    _settingsRoot = _serviceLocator.ProvideDefaultSettingsRoot();
+                    _settingsRoot = _entityLocator.ProvideDefaultSettingsRoot();
 
                     try
                     {
-                        using (var writer = _serviceLocator.ProvideTextWriter(path))
+                        using (var writer = _entityLocator.ProvideTextWriter(path))
                         {
                             _serializer.Serialize(writer, _settingsRoot);
                         }
@@ -107,7 +107,7 @@ namespace DonkeySuite.DesktopMonitor.Domain.Model.Settings
                 _available.WaitOne();
 
                 var path = GetSettingsFilePath();
-                using (var writer = _serviceLocator.ProvideTextWriter(path))
+                using (var writer = _entityLocator.ProvideTextWriter(path))
                 {
                     _serializer.Serialize(writer, _settingsRoot);
                 }

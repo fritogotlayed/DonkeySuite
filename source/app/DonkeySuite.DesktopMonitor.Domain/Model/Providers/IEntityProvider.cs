@@ -4,7 +4,7 @@ using DonkeySuite.DesktopMonitor.Domain.Model.SortStrategies;
 
 namespace DonkeySuite.DesktopMonitor.Domain.Model.Providers
 {
-    public interface IServiceLocator
+    public interface IEntityProvider
     {
         TextWriter ProvideTextWriter(string path);
         ISortStrategy ProvideDefaultSortStrategy();

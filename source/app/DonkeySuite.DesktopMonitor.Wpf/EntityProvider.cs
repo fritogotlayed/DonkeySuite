@@ -8,12 +8,12 @@ using Ninject.Parameters;
 
 namespace DonkeySuite.DesktopMonitor.Wpf
 {
-    public class ServiceLocator : IServiceLocator
+    public class EntityProvider : IEntityProvider
     {
         private readonly IKernel _kernel;
         private readonly IEnvironment _environment;
 
-        public ServiceLocator(IKernel kernel, IEnvironment environment)
+        public EntityProvider(IKernel kernel, IEnvironment environment)
         {
             _kernel = kernel;
             _environment = environment;

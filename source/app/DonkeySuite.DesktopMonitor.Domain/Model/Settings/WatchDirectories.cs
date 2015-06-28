@@ -5,20 +5,20 @@ namespace DonkeySuite.DesktopMonitor.Domain.Model.Settings
 {
     public class WatchDirectories : List<WatchDirectory>
     {
-        private readonly IServiceLocator _serviceLocator;
+        private readonly IEntityProvider _entityLocator;
 
         public WatchDirectories() : this(null)
         {
         }
 
-        public WatchDirectories(IServiceLocator serviceLocator)
+        public WatchDirectories(IEntityProvider entityLocator)
         {
-            _serviceLocator = serviceLocator;
+            _entityLocator = entityLocator;
         }
 
         public virtual void PopulateWithDefaults()
         {
-            var d = _serviceLocator.ProvideDefaultWatchDirectory();
+            var d = _entityLocator.ProvideDefaultWatchDirectory();
             d.PopulateWithDefaults();
             Add(d);
         }

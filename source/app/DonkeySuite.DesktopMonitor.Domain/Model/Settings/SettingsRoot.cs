@@ -6,16 +6,16 @@ namespace DonkeySuite.DesktopMonitor.Domain.Model.Settings
     [XmlRoot("settings")]
     public class SettingsRoot
     {
-        private readonly IServiceLocator _serviceLocator;
+        private readonly IEntityProvider _entityLocator;
 
         public SettingsRoot() : this(null)
         {
             // This constructor implemented so that serialization is still allowed.
         }
 
-        public SettingsRoot(IServiceLocator serviceLocator)
+        public SettingsRoot(IEntityProvider entityLocator)
         {
-            _serviceLocator = serviceLocator;
+            _entityLocator = entityLocator;
         }
 
         public ImageServer ImageServer { get; set; }
@@ -26,9 +26,9 @@ namespace DonkeySuite.DesktopMonitor.Domain.Model.Settings
 
         public void PopulateWithDefaults()
         {
-            ImageServer = _serviceLocator.ProvideDefaultImageServer(); // new ImageServer();
+            ImageServer = _entityLocator.ProvideDefaultImageServer(); // new ImageServer();
             ImageServer.PopulateWithDefaults();
-            Directories = _serviceLocator.ProvideDefaultWatchDirectories(); // new WatchDirectories();
+            Directories = _entityLocator.ProvideDefaultWatchDirectories(); // new WatchDirectories();
             Directories.PopulateWithDefaults();
         }
     }

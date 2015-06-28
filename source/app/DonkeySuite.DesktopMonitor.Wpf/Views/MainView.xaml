@@ -1,0 +1,11 @@
+﻿<UserControl x:Class="DonkeySuite.DesktopMonitor.Wpf.Views.MainView"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+      mc:Ignorable="d" d:DesignHeight="350" d:DesignWidth="525"
+      DataContext="{Binding Source={StaticResource Locator}, Path=MainViewModel}">
+    <Grid>
+        <Button Content="Scan Folder Test" FontSize="30" FontWeight="Bold" Command="{Binding ScanFolderCommand}" Margin="30"></Button>
+    </Grid>
+</UserControl>

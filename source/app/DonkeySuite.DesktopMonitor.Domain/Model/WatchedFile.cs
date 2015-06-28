@@ -10,7 +10,7 @@ namespace DonkeySuite.DesktopMonitor.Domain.Model
     {
         private ISortStrategy _sortStrategy;
         private readonly ILog _log;
-        private readonly IServiceLocator _serviceLocator;
+        private readonly IEntityProvider _entityLocator;
         private readonly IFile _file;
         private readonly IRequestProvider _requestProvider;
         private readonly IEnvironmentUtility _environmentUtility;
@@ -18,11 +18,11 @@ namespace DonkeySuite.DesktopMonitor.Domain.Model
 
         public WatchedFile() : this(null, null, null, null, null, null) { }
 
-        public WatchedFile(ILog log, IServiceLocator serviceLocator, IFile file, IRequestProvider requestProvider, IEnvironmentUtility environmentUtility, IDirectory directory)
+        public WatchedFile(ILog log, IEntityProvider entityLocator, IFile file, IRequestProvider requestProvider, IEnvironmentUtility environmentUtility, IDirectory directory)
         {
             // TODO: Dependency injection feels like it is bloating the constructor. Might be time to re-address the responsibility of this classes methods.
             _log = log;
-            _serviceLocator = serviceLocator;
+            _entityLocator = entityLocator;
             _file = file;
             _requestProvider = requestProvider;
             _environmentUtility = environmentUtility;
@@ -35,7 +35,7 @@ namespace DonkeySuite.DesktopMonitor.Domain.Model
 
         public virtual ISortStrategy SortStrategy
         {
-            get { return _sortStrategy ??  (_sortStrategy = _serviceLocator.ProvideSortStrategy(null)); }
+            get { return _sortStrategy ??  (_sortStrategy = _entityLocator.ProvideSortStrategy(null)); }
             set { _sortStrategy = value; }
         }
 

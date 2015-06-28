@@ -12,9 +12,9 @@
   See http://www.galasoft.ch/mvvm
 */
 
-using GalaSoft.MvvmLight;
 using GalaSoft.MvvmLight.Ioc;
 using Microsoft.Practices.ServiceLocation;
+using Ninject;
 
 namespace DonkeySuite.DesktopMonitor.Wpf.ViewModel
 {
@@ -29,7 +29,7 @@ namespace DonkeySuite.DesktopMonitor.Wpf.ViewModel
         /// </summary>
         public ViewModelLocator()
         {
-            Microsoft.Practices.ServiceLocation.ServiceLocator.SetLocatorProvider(() => SimpleIoc.Default);
+            ServiceLocator.SetLocatorProvider(() => SimpleIoc.Default);
 
             ////if (ViewModelBase.IsInDesignModeStatic)
             ////{
@@ -42,17 +42,17 @@ namespace DonkeySuite.DesktopMonitor.Wpf.ViewModel
             ////    SimpleIoc.Default.Register<IDataService, DataService>();
             ////}
 
-            SimpleIoc.Default.Register<MainViewModel>();
+            SimpleIoc.Default.Register(() => DependencyManager.Kernel.Get<MainViewModel>());
+            SimpleIoc.Default.Register(() => DependencyManager.Kernel.Get<MainWindowViewModel>());
+            SimpleIoc.Default.Register(() => DependencyManager.Kernel.Get<SettingsViewModel>());
         }
 
-        public MainViewModel Main
-        {
-            get
-            {
-                return Microsoft.Practices.ServiceLocation.ServiceLocator.Current.GetInstance<MainViewModel>();
-            }
-        }
-        
+        public MainViewModel MainViewModel { get { return ServiceLocator.Current.GetInstance<MainViewModel>(); } }
+
+        public MainWindowViewModel MainWindowViewModel { get { return ServiceLocator.Current.GetInstance<MainWindowViewModel>(); } }
+
+        public SettingsViewModel TestViewModel { get { return ServiceLocator.Current.GetInstance<SettingsViewModel>(); } }
+
         public static void Cleanup()
         {
             // TODO Clear the ViewModels

@@ -12,12 +12,12 @@ namespace DonkeySuite.Tests.DesktopMonitor.Domain.Model.Settings
     {
         private class SettingsRootTestBundle
         {
-            public Mock<IServiceLocator> MockServiceLocator { get; private set; }
+            public Mock<IEntityProvider> MockServiceLocator { get; private set; }
             public SettingsRoot SettingsRoot { get; private set; }
 
             public SettingsRootTestBundle()
             {
-                MockServiceLocator = new Mock<IServiceLocator>();
+                MockServiceLocator = new Mock<IEntityProvider>();
                 SettingsRoot = new SettingsRoot(MockServiceLocator.Object);
             }
         }

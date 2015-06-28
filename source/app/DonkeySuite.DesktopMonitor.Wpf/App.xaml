@@ -4,9 +4,18 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:d1p1="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             xmlns:viewModel="clr-namespace:DonkeySuite.DesktopMonitor.Wpf.ViewModel">
-  <Application.Resources>
-    <!--<vm:ViewModelLocator x:Key="Locator" d:IsDataSource="True" xmlns:vm="clr-namespace:DonkeySuite.DesktopMonitor.Wpf.ViewModel" />-->
-    <viewModel:ViewModelLocator x:Key="Locator" d:IsDataSource="True" />
-  </Application.Resources>
+             xmlns:viewModel="clr-namespace:DonkeySuite.DesktopMonitor.Wpf.ViewModel"
+             xmlns:view="clr-namespace:DonkeySuite.DesktopMonitor.Wpf.Views"
+             >
+    <Application.Resources>
+        <viewModel:ViewModelLocator x:Key="Locator" d:IsDataSource="True" />
+
+        <DataTemplate DataType="{x:Type viewModel:MainViewModel}">
+            <view:MainView />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type viewModel:SettingsViewModel}">
+            <view:SettingsView />
+        </DataTemplate>
+
+    </Application.Resources>
 </Application>

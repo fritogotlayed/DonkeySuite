@@ -24,7 +24,7 @@ namespace DonkeySuite.Tests.DesktopMonitor.Domain.Model.Settings
             public Mock<IFile> MockFile { get; private set; }
             public Mock<IXmlSerializer> MockSerializer { get; private set; }
             public Mock<IEnvironmentUtility> MockEnvironmentUtility { get; private set; }
-            public Mock<IServiceLocator> MockServiceLocator { get; private set; }
+            public Mock<IEntityProvider> MockServiceLocator { get; private set; }
             public SettingsManager SettingsManager { get; private set; }
 
             public SettingsManagerTestBundle()
@@ -34,7 +34,7 @@ namespace DonkeySuite.Tests.DesktopMonitor.Domain.Model.Settings
                 MockFile = new Mock<IFile>();
                 MockSerializer = new Mock<IXmlSerializer>();
                 MockEnvironmentUtility = new Mock<IEnvironmentUtility>();
-                MockServiceLocator = new Mock<IServiceLocator>();
+                MockServiceLocator = new Mock<IEntityProvider>();
 
                 SettingsManager = new SettingsManager(MockLog.Object, MockSemaphore.Object, MockFile.Object, MockSerializer.Object, MockEnvironmentUtility.Object, MockServiceLocator.Object);
             }

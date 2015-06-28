@@ -49,7 +49,7 @@
     <Compile Include="Model\IWatchedFile.cs" />
     <Compile Include="Model\LogProvider.cs" />
     <Compile Include="Model\Providers\IRequestProvider.cs" />
-    <Compile Include="Model\Providers\IServiceLocator.cs" />
+    <Compile Include="Model\Providers\IEntityProvider.cs" />
     <Compile Include="Model\EnvironmentUtility.cs" />
     <Compile Include="Model\IEnvironmentUtility.cs" />
     <Compile Include="Model\Providers\RequestProvider.cs" />

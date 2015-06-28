@@ -14,12 +14,12 @@ namespace DonkeySuite.Tests.DesktopMonitor.Domain.Model.Settings
     {
         private class WatchDirectoryTestBundle
         {
-            public Mock<IServiceLocator> MockServiceLocator { get; private set; }
+            public Mock<IEntityProvider> MockServiceLocator { get; private set; }
             public WatchDirectories WatchDirectories { get; private set; }
 
             public WatchDirectoryTestBundle()
             {
-                MockServiceLocator = new Mock<IServiceLocator>();
+                MockServiceLocator = new Mock<IEntityProvider>();
                 WatchDirectories = new WatchDirectories(MockServiceLocator.Object);
             }
         }

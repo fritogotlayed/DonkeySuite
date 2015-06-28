@@ -18,12 +18,12 @@ namespace DonkeySuite.DesktopMonitor.Domain.Model
         private readonly ILog _log;
         private readonly List<string> _acceptableExtensions;
         private ISortStrategy _sortStrategy;
-        private readonly IServiceLocator _serviceLocator;
+        private readonly IEntityProvider _entityLocator;
         private readonly IDirectoryScanner _directoryScanner;
 
-        public WatchedDirectory(IServiceLocator serviceLocator, ILogProvider logProvider, IDirectoryScanner directoryScanner)
+        public WatchedDirectory(IEntityProvider entityLocator, ILogProvider logProvider, IDirectoryScanner directoryScanner)
         {
-            _serviceLocator = serviceLocator;
+            _entityLocator = entityLocator;
             _log = logProvider.GetLogger(GetType());
             _acceptableExtensions = new List<string>();
             _directoryScanner = directoryScanner;
@@ -38,12 +38,12 @@ namespace DonkeySuite.DesktopMonitor.Domain.Model
             var strategy = watchDir.SortStrategy;
             if (string.IsNullOrEmpty(strategy))
             {
-                _sortStrategy = _serviceLocator.ProvideDefaultSortStrategy();
+                _sortStrategy = _entityLocator.ProvideDefaultSortStrategy();
             }
             else
             {
                 strategy = strategy.ToLower();
-                _sortStrategy = _serviceLocator.ProvideSortStrategy(strategy);
+                _sortStrategy = _entityLocator.ProvideSortStrategy(strategy);
             }
 
             foreach (string ext in watchDir.FileExtensions.Split(','))

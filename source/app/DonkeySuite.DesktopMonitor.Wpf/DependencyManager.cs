@@ -8,6 +8,7 @@ using DonkeySuite.DesktopMonitor.Domain.Model.Requests;
 using DonkeySuite.DesktopMonitor.Domain.Model.Settings;
 using DonkeySuite.DesktopMonitor.Domain.Model.SortStrategies;
 using DonkeySuite.DesktopMonitor.Wpf.Repositories;
+using DonkeySuite.DesktopMonitor.Wpf.ViewModel;
 using log4net;
 using MadDonkeySoftware.SystemWrappers;
 using MadDonkeySoftware.SystemWrappers.IO;
@@ -26,14 +27,11 @@ namespace DonkeySuite.DesktopMonitor.Wpf
         private static volatile IKernel _kernel;
         private static readonly object SyncRoot = new object();
         private static readonly ILog Log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
-        public static Action<IKernel> AdditionalBindings { get; set; }
 
         static DependencyManager()
         {
-            AdditionalBindings = kernel => { };
         }
 
-        // TODO: Refactor calling code so that this may be removed.
         public static IKernel Kernel
         {
             get
@@ -63,6 +61,7 @@ namespace DonkeySuite.DesktopMonitor.Wpf
         {
             Log.Debug("Initializing kernel.");
 
+            // Domain stuff
             kernel.Bind<AddImageRequest>().ToSelf().InTransientScope();
             kernel.Bind<IDirectory>().To<DirectoryWrapper>().InTransientScope();
             kernel.Bind<ICredentialRepository>().To<CredentialRepository>();
@@ -75,19 +74,19 @@ namespace DonkeySuite.DesktopMonitor.Wpf
             kernel.Bind<IPath>().To<PathWrapper>().InTransientScope();
             kernel.Bind<IRequestProvider>().To<RequestProvider>().InTransientScope();
             kernel.Bind<ISemaphore>().To<SemaphoreWrapper>().InTransientScope()
-                .WithConstructorArgument("initialCount", 1)
-                .WithConstructorArgument("maximumCount", 1);
-            kernel.Bind<IServiceLocator>().To<ServiceLocator>();
+                  .WithConstructorArgument("initialCount", 1)
+                  .WithConstructorArgument("maximumCount", 1);
+            kernel.Bind<IEntityProvider>().To<EntityProvider>();
             kernel.Bind<ISettingsManager>().To<SettingsManager>();
             kernel.Bind<IWatchedFile>().To<WatchedFile>();
             kernel.Bind<IWebRequestFactory>().To<WebRequestFactory>();
             kernel.Bind<IXmlSerializer>()
-                .To<XmlSerializerWrapper>()
-                .InTransientScope()
-                .WithConstructorArgument("serializer", new XmlSerializer(typeof (SettingsRoot)));
+                  .To<XmlSerializerWrapper>()
+                  .InTransientScope()
+                  .WithConstructorArgument("serializer", new XmlSerializer(typeof (SettingsRoot)));
             kernel.Bind<SettingsManager>()
-                .ToSelf()
-                .InSingletonScope();
+                  .ToSelf()
+                  .InSingletonScope();
             kernel.Bind<SettingsRoot>().ToSelf().InTransientScope();
             kernel.Bind<TextWriter>().To<StreamWriter>().InTransientScope();
             kernel.Bind<WatchedFile>().ToSelf().InTransientScope();
@@ -96,7 +95,10 @@ namespace DonkeySuite.DesktopMonitor.Wpf
             kernel.Bind<ISortStrategy>().To<SimpleSortStrategy>().Named("defaultSortStrategy");
             kernel.Bind<ISortStrategy>().To<SimpleSortStrategy>().Named("simpleSortStrategy");
 
-            AdditionalBindings(kernel);
+            // View Models
+            kernel.Bind<MainWindowViewModel>().ToSelf().InSingletonScope();
+            kernel.Bind<MainViewModel>().ToSelf().InTransientScope();
+            kernel.Bind<SettingsViewModel>().ToSelf().InTransientScope();
         }
     }
 }

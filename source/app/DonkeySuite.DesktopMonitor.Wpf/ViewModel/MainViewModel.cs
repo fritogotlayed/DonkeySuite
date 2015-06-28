@@ -1,12 +1,9 @@
 using System;
 using System.Threading.Tasks;
-using DonkeySuite.DesktopMonitor.Domain;
 using DonkeySuite.DesktopMonitor.Domain.Model;
 using DonkeySuite.DesktopMonitor.Domain.Model.Settings;
 using DonkeySuite.DesktopMonitor.Wpf.Repositories;
-using GalaSoft.MvvmLight;
 using GalaSoft.MvvmLight.Command;
-using log4net;
 using Ninject;
 
 namespace DonkeySuite.DesktopMonitor.Wpf.ViewModel
@@ -23,14 +20,12 @@ namespace DonkeySuite.DesktopMonitor.Wpf.ViewModel
     /// See http://www.galasoft.ch/mvvm
     /// </para>
     /// </summary>
-    public class MainViewModel : ViewModelBase
+    public class MainViewModel : DesktopMonitorBaseViewModel
     {
-        private static readonly ILog Log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
-
         /// <summary>
         /// Initializes a new instance of the MainViewModel class.
         /// </summary>
-        public MainViewModel()
+        public MainViewModel(ILogProvider logProvider) : base(logProvider)
         {
             if (IsInDesignMode)
             {
@@ -39,13 +34,13 @@ namespace DonkeySuite.DesktopMonitor.Wpf.ViewModel
             else
             {
                 // Code runs "for real"
-                TestRequest = new RelayCommand(TestRequestCommandHandler);
+                ScanFolderCommand = new RelayCommand(ScanFolderCommandHandler);
             }
         }
 
-        public RelayCommand TestRequest { get; set; }
+        public RelayCommand ScanFolderCommand { get; set; }
 
-        public void TestRequestCommandHandler()
+        public void ScanFolderCommandHandler()
         {
             Task.Factory.StartNew(ScanFolder);
         }
@@ -56,7 +51,7 @@ namespace DonkeySuite.DesktopMonitor.Wpf.ViewModel
             using (var trans = session.BeginTransaction())
                 try
                 {
-                    // TODO: Figure out how to make this injected.
+                    // TODO: Make this injected.
                     var repo = new WatchedFileRepository(session, DependencyManager.Kernel);
                     var mgr = DependencyManager.Kernel.Get<SettingsManager>();
                     var settings = mgr.GetSettings();
