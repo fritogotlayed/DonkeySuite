@@ -1,11 +1,11 @@
 ﻿using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
-using System.Web.Helpers;
 using System.Web.Http;
 using DonkeySuite.ImageServer.Api.Filters;
 using DonkeySuite.ImageServer.Api.Models;
 using log4net;
+using Newtonsoft.Json;
 
 namespace DonkeySuite.ImageServer.Api.Controllers
 {
@@ -32,7 +32,7 @@ namespace DonkeySuite.ImageServer.Api.Controllers
             var responseObject = new Foo {Value = id, Name = "Blah"};
             return new HttpResponseMessage
             {
-                Content = new StringContent(Json.Encode(responseObject))
+                Content = new StringContent(JsonConvert.SerializeObject(responseObject))
             };
         }
 
