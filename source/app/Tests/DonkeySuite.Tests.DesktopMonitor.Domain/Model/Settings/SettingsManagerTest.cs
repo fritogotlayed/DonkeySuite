@@ -1,14 +1,10 @@
 using System;
 using System.IO;
-using System.Runtime.Serialization;
 using System.Threading;
-using DonkeySuite.DesktopMonitor.Domain.Model;
-using DonkeySuite.DesktopMonitor.Domain.Model.Providers;
+using DonkeySuite.DesktopMonitor.Domain.Model.Repositories;
 using DonkeySuite.DesktopMonitor.Domain.Model.Settings;
 using log4net;
-using MadDonkeySoftware.SystemWrappers.IO;
 using MadDonkeySoftware.SystemWrappers.Threading;
-using MadDonkeySoftware.SystemWrappers.Xml.Serialization;
 using Moq;
 using NUnit.Framework;
 
@@ -21,65 +17,77 @@ namespace DonkeySuite.Tests.DesktopMonitor.Domain.Model.Settings
         {
             public Mock<ILog> MockLog { get; private set; }
             public Mock<ISemaphore> MockSemaphore { get; private set; }
-            public Mock<IFile> MockFile { get; private set; }
-            public Mock<IXmlSerializer> MockSerializer { get; private set; }
-            public Mock<IEnvironmentUtility> MockEnvironmentUtility { get; private set; }
-            public Mock<IEntityProvider> MockServiceLocator { get; private set; }
+            public Mock<ISettingsRepository> MockSettingsRepository { get; private set; }
             public SettingsManager SettingsManager { get; private set; }
 
             public SettingsManagerTestBundle()
             {
                 MockLog = new Mock<ILog>();
                 MockSemaphore = new Mock<ISemaphore>();
-                MockFile = new Mock<IFile>();
-                MockSerializer = new Mock<IXmlSerializer>();
-                MockEnvironmentUtility = new Mock<IEnvironmentUtility>();
-                MockServiceLocator = new Mock<IEntityProvider>();
+                MockSettingsRepository = new Mock<ISettingsRepository>();
 
-                SettingsManager = new SettingsManager(MockLog.Object, MockSemaphore.Object, MockFile.Object, MockSerializer.Object, MockEnvironmentUtility.Object, MockServiceLocator.Object);
+                SettingsManager = new SettingsManager(MockLog.Object, MockSemaphore.Object, MockSettingsRepository.Object);
             }
         }
 
         [Test]
-        public void SettingsManagerReturnsSettingsObject()
+        public void GetSettings_Returns_Settings_Object()
         {
             // Arrange
             var testBundle = new SettingsManagerTestBundle();
             var mockSettingsRoot = new Mock<SettingsRoot>();
 
-            testBundle.MockServiceLocator.Setup(x => x.ProvideDefaultSettingsRoot()).Returns(mockSettingsRoot.Object);
+            testBundle.MockSettingsRepository.Setup(x => x.Load()).Returns(mockSettingsRoot.Object);
 
             // Act
             var settings = testBundle.SettingsManager.GetSettings();
 
             // Assert
             Assert.IsNotNull(settings);
+            Assert.AreSame(mockSettingsRoot.Object, settings);
         }
 
         [Test]
-        public void SettingsManagerReturnsNewSettingsObjectAfterSaveFails()
+        public void GetSettings_Returns_New_Settings_Object_After_Save_Fails()
         {
             // Arrange
-            var mockSettingsRoot = new Mock<SettingsRoot>();
             var testBundle = new SettingsManagerTestBundle();
+            var mockSettingsRoot = new Mock<SettingsRoot>();
 
-            testBundle.MockServiceLocator.Setup(x => x.ProvideDefaultSettingsRoot()).Returns(mockSettingsRoot.Object);
-            testBundle.MockFile.Setup(x => x.Exists(It.IsAny<string>())).Returns(false);
-            testBundle.MockFile.Setup(x => x.Open(It.IsAny<string>(), FileMode.Open)).Returns((FileStream)null);
-            testBundle.MockEnvironmentUtility.SetupGet(x => x.IsWindowsPlatform).Returns(true);
-
-            testBundle.MockSerializer.Setup(x => x.Serialize(It.IsAny<TextWriter>(), It.IsAny<object>()))
-                .Throws(new SerializationException());
+            testBundle.MockSettingsRepository.Setup(x => x.Load()).Returns((SettingsRoot)null);
+            testBundle.MockSettingsRepository.Setup(x => x.CreateNewSettings()).Returns(mockSettingsRoot.Object);
+            testBundle.MockSettingsRepository.Setup(x => x.Save(mockSettingsRoot.Object)).Throws(new IOException("Test Exception"));
 
             // Act
             var settings = testBundle.SettingsManager.GetSettings();
 
             // Assert
             Assert.AreSame(mockSettingsRoot.Object, settings);
+            testBundle.MockSemaphore.Verify(x => x.WaitOne(), Times.Once);
+            testBundle.MockSemaphore.Verify(x => x.Release(), Times.Once);
         }
 
         [Test]
-        public void SettingsManagerReturnsNullWhenSemaphoreInterrupted()
+        public void GetSettings_Returns_New_Settings_Object_After_Save_Succeeds()
+        {
+            // Arrange
+            var testBundle = new SettingsManagerTestBundle();
+            var mockSettingsRoot = new Mock<SettingsRoot>();
+
+            testBundle.MockSettingsRepository.Setup(x => x.Load()).Returns((SettingsRoot)null);
+            testBundle.MockSettingsRepository.Setup(x => x.CreateNewSettings()).Returns(mockSettingsRoot.Object);
+
+            // Act
+            var settings = testBundle.SettingsManager.GetSettings();
+
+            // Assert
+            Assert.AreSame(mockSettingsRoot.Object, settings);
+            testBundle.MockSemaphore.Verify(x => x.WaitOne(), Times.Once);
+            testBundle.MockSemaphore.Verify(x => x.Release(), Times.Once);
+        }
+
+        [Test]
+        public void GetSettings_Returns_Null_When_Semaphore_Interrupted()
         {
             // Arrange
             var testBundle = new SettingsManagerTestBundle();
@@ -94,29 +102,36 @@ namespace DonkeySuite.Tests.DesktopMonitor.Domain.Model.Settings
         }
 
         [Test]
-        public void SettingsManagerRethrowsException()
+        public void GetSettings_Rethrows_Exception()
         {
+            var testBundle = new SettingsManagerTestBundle();
+            var testException = new NullReferenceException();
+            Exception caughtException = null;
+
+            testBundle.MockSettingsRepository.Setup(x => x.Load()).Throws(testException);
+
             // Act
             try
             {
-                var settingManager = new SettingsManager(null, null, null, null, null, null);
-                settingManager.GetSettings();
+                testBundle.SettingsManager.GetSettings();
             }
             catch (Exception ex)
             {
-                // Assert
-                Assert.AreEqual(typeof (NullReferenceException), ex.GetType());
+                caughtException = ex;
             }
+
+            // Assert
+            Assert.AreSame(testException, caughtException);
         }
 
         [Test]
         public void SettingsManagerReturnsSameSettingsObjectAfterMultipleCalls()
         {
             // Arrange
-            var mockSettingsRoot = new Mock<SettingsRoot>();
             var testBundle = new SettingsManagerTestBundle();
+            var mockSettingsRoot = new Mock<SettingsRoot>();
 
-            testBundle.MockServiceLocator.Setup(x => x.ProvideDefaultSettingsRoot()).Returns(mockSettingsRoot.Object);
+            testBundle.MockSettingsRepository.Setup(x => x.Load()).Returns(mockSettingsRoot.Object);
 
             // Act
             var s1 = testBundle.SettingsManager.GetSettings();
@@ -129,44 +144,7 @@ namespace DonkeySuite.Tests.DesktopMonitor.Domain.Model.Settings
         }
 
         [Test]
-        public void SettingsManagerReturnsSavedSettingsObject()
-        {
-            // Arrange
-            var mockSettingsRoot = new Mock<SettingsRoot>();
-            var testBundle = new SettingsManagerTestBundle();
-
-            testBundle.MockFile.Setup(x => x.Exists(It.IsAny<string>())).Returns(true);
-            testBundle.MockEnvironmentUtility.SetupGet(x => x.IsWindowsPlatform).Returns(true);
-            testBundle.MockSerializer.Setup(x => x.Deserialize(It.IsAny<Stream>())).Returns(mockSettingsRoot.Object);
-
-            // Act
-            var settings = testBundle.SettingsManager.GetSettings();
-
-            // Assert
-            Assert.AreSame(mockSettingsRoot.Object, settings);
-            testBundle.MockSerializer.Verify(x => x.Serialize(It.IsAny<TextWriter>(), It.IsAny<object>()), Times.Never);
-        }
-
-        [Test]
-        public void SettingsManagerReturnsNullWhenFailureToReadSettingsFile()
-        {
-            // Arrange
-            var testBundle = new SettingsManagerTestBundle();
-
-            testBundle.MockFile.Setup(x => x.Exists(It.IsAny<string>())).Returns(true);
-            testBundle.MockEnvironmentUtility.SetupGet(x => x.IsWindowsPlatform).Returns(true);
-            testBundle.MockSerializer.Setup(x => x.Deserialize(It.IsAny<Stream>())).Throws(new SerializationException());
-
-            // Act
-            var settings = testBundle.SettingsManager.GetSettings();
-
-            // Assert
-            Assert.IsNull(settings);
-            testBundle.MockLog.Verify(x => x.Error("Error opening settings file.", It.IsAny<Exception>()), Times.Once);
-        }
-
-        [Test]
-        public void SettingsManagerSaveWritesToSerializer()
+        public void SaveSettings_Locks_And_Unlocks_When_Save_Successful()
         {
             // Arrange
             var testBundle = new SettingsManagerTestBundle();
@@ -175,48 +153,24 @@ namespace DonkeySuite.Tests.DesktopMonitor.Domain.Model.Settings
             testBundle.SettingsManager.SaveSettings();
 
             // Assert
-            testBundle.MockSerializer.Verify(x => x.Serialize(It.IsAny<TextWriter>(), It.IsAny<object>()), Times.Once);
+            testBundle.MockSemaphore.Verify(x => x.WaitOne(), Times.Once);
+            testBundle.MockSemaphore.Verify(x => x.Release(), Times.Once);
         }
 
         [Test]
-        public void SettingsManagerSaveRethrowsException()
+        public void SaveSettings_Throws_Exception_When_Semaphore_Fails()
         {
             // Arrange
+            var testException = new ThreadInterruptedException();
             var testBundle = new SettingsManagerTestBundle();
-            var testException = new Exception("test exception");
             Exception thrownException = null;
 
-            testBundle.MockSerializer.Setup(x => x.Serialize(It.IsAny<TextWriter>(), It.IsAny<object>())).Throws(testException);
+            testBundle.MockSemaphore.Setup(x => x.WaitOne()).Throws(testException);
 
             // Act
             try
             {
                 testBundle.SettingsManager.SaveSettings();
-            }
-            catch (Exception ex)
-            {
-                thrownException = ex;
-            }
-
-            // Assert
-            testBundle.MockSerializer.Verify(x => x.Serialize(It.IsAny<TextWriter>(), It.IsAny<object>()), Times.Once);
-            Assert.AreEqual(testException, thrownException);
-        }
-
-        [Test]
-        public void SettingsManagerGetSettingsRethrowsException()
-        {
-            // Arrange
-            var testBundle = new SettingsManagerTestBundle();
-            var testException = new Exception("test exception");
-            Exception thrownException = null;
-
-            testBundle.MockEnvironmentUtility.SetupGet(x => x.DirectorySeparatorChar).Throws(testException);
-
-            // Act
-            try
-            {
-                testBundle.SettingsManager.GetSettings();
             }
             catch (Exception ex)
             {
@@ -226,46 +180,32 @@ namespace DonkeySuite.Tests.DesktopMonitor.Domain.Model.Settings
             // Assert
             testBundle.MockSemaphore.Verify(x => x.WaitOne(), Times.Once);
             testBundle.MockSemaphore.Verify(x => x.Release(), Times.Once);
-            Assert.AreEqual(testException, thrownException);
+            Assert.IsNotNull(thrownException);
         }
 
         [Test]
-        public void SettingsManagerSaveHandlesSemaphoreInterruptedGracefully()
+        public void SaveSettings_Throws_Exception_When_Serialization_Fails()
         {
             // Arrange
+            var testException = new ThreadInterruptedException();
             var testBundle = new SettingsManagerTestBundle();
+            Exception thrownException = null;
 
-            testBundle.MockSemaphore.Setup(x => x.WaitOne()).Throws(new ThreadInterruptedException());
-
-            // Act
-            testBundle.SettingsManager.SaveSettings();
-
-            // Assert
-            testBundle.MockSemaphore.Verify(x => x.WaitOne(), Times.Once);
-        }
-
-        [Test]
-        public void SettingsManagerSaveThrowsIOExceptionWhenSerializationFails()
-        {
-            // Arrange
-            var testException = new SerializationException();
-            var testBundle = new SettingsManagerTestBundle();
-            IOException thrownException = null;
-
-            testBundle.MockSemaphore.Setup(x => x.WaitOne()).Throws(testException);
+            testBundle.MockSettingsRepository.Setup(x => x.Save(It.IsAny<SettingsRoot>())).Throws(testException);
 
             // Act
             try
             {
                 testBundle.SettingsManager.SaveSettings();
             }
-            catch (IOException ex)
+            catch (Exception ex)
             {
                 thrownException = ex;
             }
 
             // Assert
             testBundle.MockSemaphore.Verify(x => x.WaitOne(), Times.Once);
+            testBundle.MockSemaphore.Verify(x => x.Release(), Times.Once);
             Assert.IsNotNull(thrownException);
         }
     }

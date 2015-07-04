@@ -1,12 +1,8 @@
 ﻿using System;
-using System.IO;
-using System.Runtime.Serialization;
 using System.Threading;
-using DonkeySuite.DesktopMonitor.Domain.Model.Providers;
+using DonkeySuite.DesktopMonitor.Domain.Model.Repositories;
 using log4net;
-using MadDonkeySoftware.SystemWrappers.IO;
 using MadDonkeySoftware.SystemWrappers.Threading;
-using MadDonkeySoftware.SystemWrappers.Xml.Serialization;
 
 namespace DonkeySuite.DesktopMonitor.Domain.Model.Settings
 {
@@ -14,22 +10,14 @@ namespace DonkeySuite.DesktopMonitor.Domain.Model.Settings
     {
         private readonly ILog _log;
         private readonly ISemaphore _available;
-        private readonly IFile _file;
-        private readonly IXmlSerializer _serializer;
-        private readonly IEnvironmentUtility _environmentUtility;
-        private readonly IEntityProvider _entityLocator;
-        private const string FileName = "settings.xml";
+        private readonly ISettingsRepository _settingsRepository;
         private SettingsRoot _settingsRoot;
 
-        public SettingsManager(ILog log, ISemaphore semaphore, IFile file, IXmlSerializer serializer, IEnvironmentUtility environmentUtility, IEntityProvider entityLocator)
+        public SettingsManager(ILog log, ISemaphore semaphore, ISettingsRepository settingsRepository)
         {
-            // TODO: Dependency injection feels like it is bloating the constructor. Might be time to re-address the responsibility of this classes methods.
             _log = log;
             _available = semaphore;
-            _file = file;
-            _serializer = serializer;
-            _environmentUtility = environmentUtility;
-            _entityLocator = entityLocator;
+            _settingsRepository = settingsRepository;
         }
 
         public SettingsRoot GetSettings()
@@ -53,43 +41,21 @@ namespace DonkeySuite.DesktopMonitor.Domain.Model.Settings
                     return _settingsRoot;
                 }
 
-                var path = GetSettingsFilePath();
-                if (!_file.Exists(path))
+                _settingsRoot = _settingsRepository.Load();
+                if (_settingsRoot == null)
                 {
-                    _log.Warn(string.Format("Settings file \"{0}\" does not exist. Populating with defaults.", path));
-                    _settingsRoot = _entityLocator.ProvideDefaultSettingsRoot();
-
+                    _settingsRoot = _settingsRepository.CreateNewSettings();
                     try
                     {
-                        using (var writer = _entityLocator.ProvideTextWriter(path))
-                        {
-                            _serializer.Serialize(writer, _settingsRoot);
-                        }
+                        _settingsRepository.Save(_settingsRoot);
                     }
-                    catch (SerializationException e)
+                    catch (Exception ex)
                     {
-                        _log.Warn("Could not save default settings.", e);
-                    }
-                }
-                else
-                {
-                    _log.Info(string.Format("Settings file \"{0}\" used.", path));
-
-                    try
-                    {
-                        using (var fileStream = _file.Open(path, FileMode.Open))
-                        {
-                            _settingsRoot = (SettingsRoot) _serializer.Deserialize(fileStream);
-                        }
-                    }
-                    catch (SerializationException e)
-                    {
-                        _log.Error("Error opening settings file.", e);
+                        _log.Warn("Saving new settings failed.", ex);
                     }
                 }
 
                 _available.Release();
-
             }
             catch (Exception)
             {
@@ -105,21 +71,8 @@ namespace DonkeySuite.DesktopMonitor.Domain.Model.Settings
             try
             {
                 _available.WaitOne();
-
-                var path = GetSettingsFilePath();
-                using (var writer = _entityLocator.ProvideTextWriter(path))
-                {
-                    _serializer.Serialize(writer, _settingsRoot);
-                }
-            }
-            catch (ThreadInterruptedException e)
-            {
-                _log.Warn("Failed to acquire semaphore lock when saving settings.", e);
-            }
-            catch (SerializationException e)
-            {
+                _settingsRepository.Save(_settingsRoot);
                 _available.Release();
-                throw new IOException("Could not save settings.", e);
             }
             catch (Exception e)
             {
@@ -127,16 +80,6 @@ namespace DonkeySuite.DesktopMonitor.Domain.Model.Settings
                 _available.Release();
                 throw;
             }
-            _available.Release();
-        }
-
-        private string GetSettingsFilePath()
-        {
-            var sep = _environmentUtility.DirectorySeparatorChar.ToString();
-            var userHome = _environmentUtility.UserHomeDirectory;
-            var fileFullPath = string.Join(sep, userHome, ".mdsoftware", "dirWatcher", FileName);
-
-            return fileFullPath;
         }
     }
 }

@@ -106,6 +106,7 @@
     <Compile Include="DependencyManager.cs" />
     <Compile Include="Mappings\WatchedFileMap.cs" />
     <Compile Include="NHibernateHelper.cs" />
+    <Compile Include="Repositories\SettingsRepository.cs" />
     <Compile Include="Repositories\Repository.cs" />
     <Compile Include="Repositories\CredentialRepository.cs" />
     <Compile Include="Repositories\WatchFileRepository.cs" />

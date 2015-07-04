@@ -18,6 +18,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DonkeySuite.Tests.DesktopMo
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MadDonkeySoftware.SystemWrappers", "app\MadDonkeySoftware.SystemWrappers\MadDonkeySoftware.SystemWrappers.csproj", "{E088CE6A-F788-4F7F-A06A-E356FD7645CB}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DonkeySuite.Tests.DesktopMonitor.Wpf", "app\Tests\DonkeySuite.Tests.DesktopMonitor.Wpf\DonkeySuite.Tests.DesktopMonitor.Wpf.csproj", "{A3E36F83-A489-4C80-9723-15C6A5184769}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -44,11 +46,16 @@ Global
 		{E088CE6A-F788-4F7F-A06A-E356FD7645CB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E088CE6A-F788-4F7F-A06A-E356FD7645CB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E088CE6A-F788-4F7F-A06A-E356FD7645CB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A3E36F83-A489-4C80-9723-15C6A5184769}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A3E36F83-A489-4C80-9723-15C6A5184769}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A3E36F83-A489-4C80-9723-15C6A5184769}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A3E36F83-A489-4C80-9723-15C6A5184769}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{FEE03E44-C0C9-4C73-9B45-6FC34B8B5E00} = {BDE32A9B-D0A1-434A-863E-1F7EF0682E3C}
+		{A3E36F83-A489-4C80-9723-15C6A5184769} = {BDE32A9B-D0A1-434A-863E-1F7EF0682E3C}
 	EndGlobalSection
 EndGlobal
