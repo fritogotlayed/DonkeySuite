@@ -82,12 +82,13 @@ namespace DonkeySuite.Tests.DesktopMonitor.Domain.Model
             // Arrange
             var testBundle = new WatchedDirectoryTestBundle();
             var mockWatchFileRepository = new Mock<IWatchedFileRepository>();
+            var mockServer = new Mock<ImageServer>();
 
             testBundle.MockDirectoryScanner.Setup(x => x.GetAvailableImages(mockWatchFileRepository.Object, null, It.IsAny<IList<string>>(), false, null))
                       .Returns(new List<IWatchedFile>());
 
             // Act
-            testBundle.WatchedDirectory.ProcessAvailableImages(mockWatchFileRepository.Object);
+            testBundle.WatchedDirectory.ProcessAvailableImages(mockWatchFileRepository.Object, mockServer.Object);
 
             // Assert
             mockWatchFileRepository.Verify(x => x.LoadFileForPath(It.IsAny<string>()), Times.Never);
@@ -103,6 +104,7 @@ namespace DonkeySuite.Tests.DesktopMonitor.Domain.Model
             var watchDirectory = new WatchDirectory {FileExtensions = "abc", Mode = OperationMode.UploadOnly};
             var mockWatchedFileRepository = new Mock<IWatchedFileRepository>();
             var mockWatchedFile = new Mock<IWatchedFile>();
+            var mockServer = new Mock<ImageServer>();
 
             testBundle.MockDirectoryScanner.Setup(x => x.GetAvailableImages(mockWatchedFileRepository.Object, null, It.IsAny<IList<string>>(), false, null))
                       .Returns(new List<IWatchedFile> {mockWatchedFile.Object});
@@ -110,14 +112,14 @@ namespace DonkeySuite.Tests.DesktopMonitor.Domain.Model
             testBundle.WatchedDirectory.Configure(watchDirectory);
 
             // Act
-            testBundle.WatchedDirectory.ProcessAvailableImages(mockWatchedFileRepository.Object);
+            testBundle.WatchedDirectory.ProcessAvailableImages(mockWatchedFileRepository.Object, mockServer.Object);
 
             // Assert
             mockWatchedFileRepository.Verify(x => x.LoadFileForPath(It.IsAny<string>()), Times.Never);
             mockWatchedFileRepository.Verify(x => x.CreateNew(), Times.Never);
             mockWatchedFileRepository.Verify(x => x.Save(mockWatchedFile.Object), Times.Once);
             mockWatchedFile.VerifySet(x => x.UploadSuccessful = false, Times.Never);
-            mockWatchedFile.Verify(x => x.SendToServer(), Times.Once);
+            mockWatchedFile.Verify(x => x.SendToServer(mockServer.Object), Times.Once);
             mockWatchedFile.Verify(x => x.SortFile(), Times.Never);
             mockWatchedFile.Verify(x => x.RemoveFromDisk(), Times.Never);
         }
@@ -131,6 +133,7 @@ namespace DonkeySuite.Tests.DesktopMonitor.Domain.Model
             var mockWatchedFileRepository = new Mock<IWatchedFileRepository>();
             var mockWatchedFile = new Mock<IWatchedFile>();
             var mockLog = new Mock<ILog>();
+            var mockServer = new Mock<ImageServer>();
 
             testBundle.MockDirectoryScanner.Setup(x => x.GetAvailableImages(mockWatchedFileRepository.Object, null, It.IsAny<IList<string>>(), false, null))
                       .Returns(new List<IWatchedFile> {mockWatchedFile.Object});
@@ -141,14 +144,14 @@ namespace DonkeySuite.Tests.DesktopMonitor.Domain.Model
 
             // Act
             testBundle.WatchedDirectory.Configure(watchDirectory);
-            testBundle.WatchedDirectory.ProcessAvailableImages(mockWatchedFileRepository.Object);
+            testBundle.WatchedDirectory.ProcessAvailableImages(mockWatchedFileRepository.Object, mockServer.Object);
 
             // Assert
             mockWatchedFileRepository.Verify(x => x.LoadFileForPath(It.IsAny<string>()), Times.Never);
             mockWatchedFileRepository.Verify(x => x.CreateNew(), Times.Never);
             mockWatchedFileRepository.Verify(x => x.Save(mockWatchedFile.Object), Times.Never);
             mockWatchedFile.VerifySet(x => x.UploadSuccessful = false, Times.Never);
-            mockWatchedFile.Verify(x => x.SendToServer(), Times.Never);
+            mockWatchedFile.Verify(x => x.SendToServer(mockServer.Object), Times.Never);
             mockWatchedFile.Verify(x => x.SortFile(), Times.Once);
             mockWatchedFile.Verify(x => x.RemoveFromDisk(), Times.Never);
         }
@@ -163,6 +166,7 @@ namespace DonkeySuite.Tests.DesktopMonitor.Domain.Model
             var mockWatchedFile = new Mock<IWatchedFile>();
             var mockLog = new Mock<ILog>();
             NotImplementedException thrownException = null;
+            var mockServer = new Mock<ImageServer>();
 
             testBundle.MockDirectoryScanner.Setup(x => x.GetAvailableImages(mockWatchedFileRepository.Object, null, It.IsAny<IList<string>>(), false, null))
                                            .Returns(new List<IWatchedFile> {mockWatchedFile.Object});
@@ -176,7 +180,7 @@ namespace DonkeySuite.Tests.DesktopMonitor.Domain.Model
             // Act
             try
             {
-                testBundle.WatchedDirectory.ProcessAvailableImages(mockWatchedFileRepository.Object);
+                testBundle.WatchedDirectory.ProcessAvailableImages(mockWatchedFileRepository.Object, mockServer.Object);
             }
             catch (NotImplementedException ex)
             {
@@ -188,7 +192,7 @@ namespace DonkeySuite.Tests.DesktopMonitor.Domain.Model
             mockWatchedFileRepository.Verify(x => x.CreateNew(), Times.Never);
             mockWatchedFileRepository.Verify(x => x.Save(mockWatchedFile.Object), Times.Never);
             mockWatchedFile.VerifySet(x => x.UploadSuccessful = false, Times.Never);
-            mockWatchedFile.Verify(x => x.SendToServer(), Times.Never);
+            mockWatchedFile.Verify(x => x.SendToServer(mockServer.Object), Times.Never);
             mockWatchedFile.Verify(x => x.SortFile(), Times.Never);
             mockWatchedFile.Verify(x => x.RemoveFromDisk(), Times.Never);
             Assert.IsNotNull(thrownException);
@@ -203,6 +207,7 @@ namespace DonkeySuite.Tests.DesktopMonitor.Domain.Model
             var mockWatchedFileRepository = new Mock<IWatchedFileRepository>();
             var mockWatchedFile = new Mock<IWatchedFile>();
             var mockLog = new Mock<ILog>();
+            var mockServer = new Mock<ImageServer>();
 
             testBundle.MockDirectoryScanner.Setup(x => x.GetAvailableImages(mockWatchedFileRepository.Object, null, It.IsAny<IList<string>>(), false, null))
                                            .Returns(new List<IWatchedFile> {mockWatchedFile.Object});
@@ -210,18 +215,18 @@ namespace DonkeySuite.Tests.DesktopMonitor.Domain.Model
             testBundle.MockLogProvider.Setup(x => x.GetLogger(It.IsAny<Type>())).Returns(mockLog.Object);
 
             mockWatchedFile.SetupGet(x => x.UploadSuccessful).Returns(false);
-            mockWatchedFile.Setup(x => x.SendToServer()).Throws(new IOException());
+            mockWatchedFile.Setup(x => x.SendToServer(mockServer.Object)).Throws(new IOException());
 
             // Act
             testBundle.WatchedDirectory.Configure(watchDirectory);
-            testBundle.WatchedDirectory.ProcessAvailableImages(mockWatchedFileRepository.Object);
+            testBundle.WatchedDirectory.ProcessAvailableImages(mockWatchedFileRepository.Object, mockServer.Object);
 
             // Assert
             mockWatchedFileRepository.Verify(x => x.LoadFileForPath(It.IsAny<string>()), Times.Never);
             mockWatchedFileRepository.Verify(x => x.CreateNew(), Times.Never);
             mockWatchedFileRepository.Verify(x => x.Save(mockWatchedFile.Object), Times.Once);
             mockWatchedFile.VerifySet(x => x.UploadSuccessful = false, Times.Once);
-            mockWatchedFile.Verify(x => x.SendToServer(), Times.Once);
+            mockWatchedFile.Verify(x => x.SendToServer(mockServer.Object), Times.Once);
             mockWatchedFile.Verify(x => x.SortFile(), Times.Never);
             mockWatchedFile.Verify(x => x.RemoveFromDisk(), Times.Never);
         }

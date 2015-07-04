@@ -6,9 +6,19 @@
              xmlns:d1p1="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:viewModel="clr-namespace:DonkeySuite.DesktopMonitor.Wpf.ViewModel"
              xmlns:view="clr-namespace:DonkeySuite.DesktopMonitor.Wpf.Views"
-             >
+             xmlns:componentModel="clr-namespace:System.ComponentModel;assembly=PresentationFramework">
     <Application.Resources>
         <viewModel:ViewModelLocator x:Key="Locator" d:IsDataSource="True" />
+
+        <Style TargetType="{x:Type UserControl}">
+            <Style.Triggers>
+                <Trigger Property="componentModel:DesignerProperties.IsInDesignMode"
+                 Value="true">
+                    <Setter Property="Background"
+                    Value="White" />
+                </Trigger>
+            </Style.Triggers>
+        </Style>
 
         <DataTemplate DataType="{x:Type viewModel:MainViewModel}">
             <view:MainView />

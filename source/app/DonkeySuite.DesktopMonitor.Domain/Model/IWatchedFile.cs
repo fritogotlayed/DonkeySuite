@@ -1,4 +1,4 @@
-using System;
+using DonkeySuite.DesktopMonitor.Domain.Model.Settings;
 using DonkeySuite.DesktopMonitor.Domain.Model.SortStrategies;
 
 namespace DonkeySuite.DesktopMonitor.Domain.Model
@@ -10,8 +10,8 @@ namespace DonkeySuite.DesktopMonitor.Domain.Model
         bool UploadSuccessful { get; set; }
         ISortStrategy SortStrategy { get; set; }
         byte[] LoadImageBytes();
-        void SendToServer();
-        bool IsInBaseDirectory(String directory);
+        void SendToServer(IImageServer server);
+        bool IsInBaseDirectory(string directory);
         void SortFile();
         void RemoveFromDisk();
     }

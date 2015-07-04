@@ -47,7 +47,7 @@ namespace DonkeySuite.Tests.DesktopMonitor.Domain.Model.Settings
 
             // Assert
             const string expectedDirectory = "C:\\";
-            Assert.AreEqual("jpg,jpeg,gif,tiff", testBundle.WatchDirectory.FileExtensions, "FileExtensions");
+            Assert.AreEqual("jpg,jpeg,gif,tiff,png", testBundle.WatchDirectory.FileExtensions, "FileExtensions");
             Assert.AreEqual(expectedDirectory, testBundle.WatchDirectory.Path, "Path");
             Assert.AreEqual("Simple", testBundle.WatchDirectory.SortStrategy, "SortStrategy");
             Assert.AreEqual(OperationMode.Unknown, testBundle.WatchDirectory.Mode, "Mode");
@@ -67,7 +67,7 @@ namespace DonkeySuite.Tests.DesktopMonitor.Domain.Model.Settings
 
             // Assert
             const string expectedDirectory = "/";
-            Assert.AreEqual("jpg,jpeg,gif,tiff", testBundle.WatchDirectory.FileExtensions, "FileExtensions");
+            Assert.AreEqual("jpg,jpeg,gif,tiff,png", testBundle.WatchDirectory.FileExtensions, "FileExtensions");
             Assert.AreEqual(expectedDirectory, testBundle.WatchDirectory.Path, "Path");
             Assert.AreEqual("Simple", testBundle.WatchDirectory.SortStrategy, "SortStrategy");
             Assert.AreEqual(OperationMode.Unknown, testBundle.WatchDirectory.Mode, "Mode");

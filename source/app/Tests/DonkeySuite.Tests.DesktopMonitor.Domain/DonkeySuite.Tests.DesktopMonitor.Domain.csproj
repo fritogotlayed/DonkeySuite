@@ -61,6 +61,7 @@
     <Compile Include="Model\LogProviderTest.cs" />
     <Compile Include="Model\Providers\RequestProviderTest.cs" />
     <Compile Include="Model\Requests\WebRequestFactoryTests.cs" />
+    <Compile Include="Model\Settings\ImageServersTest.cs" />
     <Compile Include="Model\SortStrategies\SimpleSortStrategyTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TestBase.cs" />

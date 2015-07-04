@@ -1,7 +1,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using DonkeySuite.DesktopMonitor.Domain;
 using DonkeySuite.DesktopMonitor.Domain.Model.Providers;
 using DonkeySuite.DesktopMonitor.Domain.Model.Settings;
 using Moq;
@@ -28,6 +27,25 @@ namespace DonkeySuite.Tests.DesktopMonitor.Domain.Model.Settings
         public void TearDown()
         {
             GC.Collect();
+        }
+
+        [Test]
+        public void WatchDirectoriesConstructedWithNull()
+        {
+            // Arrange
+            var watchDirectories = new WatchDirectories();
+            NullReferenceException expectedException = null;
+
+            try
+            {
+                watchDirectories.PopulateWithDefaults();
+            }
+            catch (NullReferenceException ex)
+            {
+                expectedException = ex;
+            }
+
+            Assert.IsNotNull(expectedException);
         }
 
         [Test]

@@ -1,5 +1,4 @@
 using System;
-using DonkeySuite.DesktopMonitor.Domain;
 using DonkeySuite.DesktopMonitor.Domain.Model.Providers;
 using DonkeySuite.DesktopMonitor.Domain.Model.Settings;
 using Moq;
@@ -35,8 +34,7 @@ namespace DonkeySuite.Tests.DesktopMonitor.Domain.Model.Settings
             var testBundle = new SettingsRootTestBundle();
 
             // Assert
-            Assert.IsNull(testBundle.SettingsRoot.ImageServer);
-            Assert.IsNull(testBundle.SettingsRoot.Directories);
+            Assert.IsNull(testBundle.SettingsRoot.ImageServers);
         }
 
         [Test]
@@ -44,18 +42,15 @@ namespace DonkeySuite.Tests.DesktopMonitor.Domain.Model.Settings
         {
             // Arrange
             var testBundle = new SettingsRootTestBundle();
-            var mockImageServer = new Mock<ImageServer>();
-            var mockWatchDirectories = new Mock<WatchDirectories>();
+            var mockImageServers = new Mock<ImageServers>();
 
-            testBundle.MockServiceLocator.Setup(x => x.ProvideDefaultImageServer()).Returns(mockImageServer.Object);
-            testBundle.MockServiceLocator.Setup(x => x.ProvideDefaultWatchDirectories()).Returns(mockWatchDirectories.Object);
+            testBundle.MockServiceLocator.Setup(x => x.ProvideDefaultImageServers()).Returns(mockImageServers.Object);
 
             // Act
             testBundle.SettingsRoot.PopulateWithDefaults();
 
             // Assert
-            Assert.IsNotNull(testBundle.SettingsRoot.ImageServer);
-            Assert.IsNotNull(testBundle.SettingsRoot.Directories);
+            Assert.IsNotNull(testBundle.SettingsRoot.ImageServers);
         }
 
         [Test]
@@ -64,16 +59,13 @@ namespace DonkeySuite.Tests.DesktopMonitor.Domain.Model.Settings
             // Arrange
             var testBundle = new SettingsRootTestBundle();
 
-            var server = new Mock<ImageServer>();
-            var directories = new Mock<WatchDirectories>();
+            var mockImageServers = new Mock<ImageServers>();
 
             // Act
-            testBundle.SettingsRoot.ImageServer = server.Object;
-            testBundle.SettingsRoot.Directories = directories.Object;
+            testBundle.SettingsRoot.ImageServers = mockImageServers.Object;
 
             // Assert
-            Assert.AreSame(server.Object, testBundle.SettingsRoot.ImageServer);
-            Assert.AreSame(directories.Object, testBundle.SettingsRoot.Directories);
+            Assert.AreSame(mockImageServers.Object, testBundle.SettingsRoot.ImageServers);
         }
     }
 }

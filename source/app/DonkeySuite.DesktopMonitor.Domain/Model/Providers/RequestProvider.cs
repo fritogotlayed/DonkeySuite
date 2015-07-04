@@ -7,25 +7,22 @@ namespace DonkeySuite.DesktopMonitor.Domain.Model.Providers
 {
     public class RequestProvider : IRequestProvider
     {
-        private readonly ISettingsManager _settingsManager;
         private readonly IWebRequestFactory _webRequestFactory;
         private readonly ILogProvider _logProvider;
         private readonly ICredentialRepository _credentialRepository;
 
-        public RequestProvider(ISettingsManager settingsManager, IWebRequestFactory webRequestFactory, ILogProvider logProvider, ICredentialRepository credentialRepository)
+        public RequestProvider(IWebRequestFactory webRequestFactory, ILogProvider logProvider, ICredentialRepository credentialRepository)
         {
-            _settingsManager = settingsManager;
             _webRequestFactory = webRequestFactory;
             _logProvider = logProvider;
             _credentialRepository = credentialRepository;
         }
 
-        public IAddImageRequest ProvideNewAddImageRequest(string fileName, byte[] imageBytes)
+        public IAddImageRequest ProvideNewAddImageRequest(IImageServer server, string fileName, byte[] imageBytes)
         {
-            var settings = _settingsManager.GetSettings();
             return new AddImageRequest(_webRequestFactory, _logProvider, _credentialRepository)
             {
-                RequestUrl = settings.ImageServer.ServerUrl,
+                RequestUrl = server.ServerUrl,
                 FileBytes = imageBytes,
                 FileName = fileName
             };

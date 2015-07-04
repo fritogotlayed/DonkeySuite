@@ -12,6 +12,7 @@
   See http://www.galasoft.ch/mvvm
 */
 
+using GalaSoft.MvvmLight;
 using GalaSoft.MvvmLight.Ioc;
 using Microsoft.Practices.ServiceLocation;
 using Ninject;
@@ -31,20 +32,19 @@ namespace DonkeySuite.DesktopMonitor.Wpf.ViewModel
         {
             ServiceLocator.SetLocatorProvider(() => SimpleIoc.Default);
 
-            ////if (ViewModelBase.IsInDesignModeStatic)
-            ////{
-            ////    // Create design time view services and models
-            ////    SimpleIoc.Default.Register<IDataService, DesignDataService>();
-            ////}
-            ////else
-            ////{
-            ////    // Create run time view services and models
-            ////    SimpleIoc.Default.Register<IDataService, DataService>();
-            ////}
-
-            SimpleIoc.Default.Register(() => DependencyManager.Kernel.Get<MainViewModel>());
-            SimpleIoc.Default.Register(() => DependencyManager.Kernel.Get<MainWindowViewModel>());
-            SimpleIoc.Default.Register(() => DependencyManager.Kernel.Get<SettingsViewModel>());
+            if (ViewModelBase.IsInDesignModeStatic)
+            {
+                // Create design time view services and models
+                // SimpleIoc.Default.Register<IDataService, DesignDataService>();
+            }
+            else
+            {
+                // Create run time view services and models
+                // SimpleIoc.Default.Register<IDataService, DataService>();
+                SimpleIoc.Default.Register(() => DependencyManager.Kernel.Get<MainViewModel>());
+                SimpleIoc.Default.Register(() => DependencyManager.Kernel.Get<MainWindowViewModel>());
+                SimpleIoc.Default.Register(() => DependencyManager.Kernel.Get<SettingsViewModel>());
+            }
         }
 
         public MainViewModel MainViewModel { get { return ServiceLocator.Current.GetInstance<MainViewModel>(); } }

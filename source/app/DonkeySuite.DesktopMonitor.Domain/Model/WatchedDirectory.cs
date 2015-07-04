@@ -52,7 +52,7 @@ namespace DonkeySuite.DesktopMonitor.Domain.Model
             }
         }
 
-        public void ProcessAvailableImages(IWatchedFileRepository watchedFileRepository)
+        public void ProcessAvailableImages(IWatchedFileRepository watchedFileRepository, IImageServer server)
         {
             if (_mode.Equals(OperationMode.UploadAndClear)) throw new NotImplementedException();
 
@@ -65,7 +65,7 @@ namespace DonkeySuite.DesktopMonitor.Domain.Model
                     if (!image.UploadSuccessful
                         && (_mode.Equals(OperationMode.UploadAndClear) || _mode.Equals(OperationMode.UploadOnly) || _mode.Equals(OperationMode.UploadAndSort)))
                     {
-                        image.SendToServer();
+                        image.SendToServer(server);
                         watchedFileRepository.Save(image);
                     }
 

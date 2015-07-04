@@ -25,7 +25,6 @@ namespace DonkeySuite.DesktopMonitor.Wpf.ViewModel
             if (IsInDesignMode)
             {
                 // Code runs in Blend --> create design time data.
-                Background = new SolidColorBrush(Colors.White);
             }
             else
             {
@@ -33,6 +32,5 @@ namespace DonkeySuite.DesktopMonitor.Wpf.ViewModel
             }
         }
 
-        public Brush Background { get; set; }
     }
 }

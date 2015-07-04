@@ -34,7 +34,7 @@ namespace DonkeySuite.DesktopMonitor.Domain.Model.Settings
         public virtual void PopulateWithDefaults()
         {
             Path = _environment.IsWindowsPlatform ? "C:\\" : "/";
-            FileExtensions = "jpg,jpeg,gif,tiff";
+            FileExtensions = "jpg,jpeg,gif,tiff,png";
             Mode = OperationMode.Unknown;
             SortStrategy = "Simple";
         }

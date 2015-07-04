@@ -55,11 +55,14 @@ namespace DonkeySuite.DesktopMonitor.Wpf.ViewModel
                     var repo = new WatchedFileRepository(session, DependencyManager.Kernel);
                     var mgr = DependencyManager.Kernel.Get<SettingsManager>();
                     var settings = mgr.GetSettings();
-                    foreach (var watchDir in settings.Directories)
+                    foreach (var server in settings.ImageServers)
                     {
-                        var dir = DependencyManager.Kernel.Get<WatchedDirectory>();
-                        dir.Configure(watchDir);
-                        dir.ProcessAvailableImages(repo);
+                        foreach (var watchDir in server.Directories)
+                        {
+                            var dir = DependencyManager.Kernel.Get<WatchedDirectory>();
+                            dir.Configure(watchDir);
+                            dir.ProcessAvailableImages(repo, server);
+                        }
                     }
 
                     trans.Commit();

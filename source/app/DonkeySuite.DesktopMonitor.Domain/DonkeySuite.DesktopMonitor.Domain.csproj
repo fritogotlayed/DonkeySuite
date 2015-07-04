@@ -59,8 +59,12 @@
     <Compile Include="Model\Requests\BaseRequest.cs" />
     <Compile Include="Model\Requests\IAddImageRequest.cs" />
     <Compile Include="Model\Requests\IBaseRequest.cs" />
+    <Compile Include="Model\Settings\IImageServer.cs" />
+    <Compile Include="Model\Settings\IImageServers.cs" />
     <Compile Include="Model\Settings\ImageServer.cs" />
+    <Compile Include="Model\Settings\ImageServers.cs" />
     <Compile Include="Model\Settings\ISettingsManager.cs" />
+    <Compile Include="Model\Settings\IWatchDirectories.cs" />
     <Compile Include="Model\Settings\IWatchDirectory.cs" />
     <Compile Include="Model\Settings\OperationMode.cs" />
     <Compile Include="Model\Settings\SettingsRoot.cs" />

@@ -1,5 +1,6 @@
 ﻿using System;
 using DonkeySuite.DesktopMonitor.Domain.Model.Providers;
+using DonkeySuite.DesktopMonitor.Domain.Model.Settings;
 using DonkeySuite.DesktopMonitor.Domain.Model.SortStrategies;
 using log4net;
 using MadDonkeySoftware.SystemWrappers.IO;
@@ -50,11 +51,11 @@ namespace DonkeySuite.DesktopMonitor.Domain.Model
             return data;
         }
 
-        public virtual void SendToServer()
+        public virtual void SendToServer(IImageServer server)
         {
             _log.DebugFormat("Transmitting image: {0}", FullPath);
 
-            var req = _requestProvider.ProvideNewAddImageRequest(FileName, LoadImageBytes());
+            var req = _requestProvider.ProvideNewAddImageRequest(server, FileName, LoadImageBytes());
 
             UploadSuccessful = req.Post();
         }

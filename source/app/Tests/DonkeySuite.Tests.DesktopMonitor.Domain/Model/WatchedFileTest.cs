@@ -1,6 +1,7 @@
 using DonkeySuite.DesktopMonitor.Domain.Model;
 using DonkeySuite.DesktopMonitor.Domain.Model.Providers;
 using DonkeySuite.DesktopMonitor.Domain.Model.Requests;
+using DonkeySuite.DesktopMonitor.Domain.Model.Settings;
 using DonkeySuite.DesktopMonitor.Domain.Model.SortStrategies;
 using log4net;
 using MadDonkeySoftware.SystemWrappers.IO;
@@ -91,15 +92,16 @@ namespace DonkeySuite.Tests.DesktopMonitor.Domain.Model
             byte[] fileBytes = {1, 4, 3};
             var mockAddImageRequest = new Mock<IAddImageRequest>();
             var testBundle = new WatchedFileTestBundle();
+            var mockServer = new Mock<ImageServer>();
 
-            testBundle.MockRequestProvider.Setup(x => x.ProvideNewAddImageRequest("testFile.txt", fileBytes)).Returns(mockAddImageRequest.Object);
+            testBundle.MockRequestProvider.Setup(x => x.ProvideNewAddImageRequest(mockServer.Object, "testFile.txt", fileBytes)).Returns(mockAddImageRequest.Object);
             mockAddImageRequest.Setup(x => x.Post()).Returns(true);
             testBundle.MockFile.Setup(x => x.ReadAllBytes(filePath)).Returns(fileBytes);
             testBundle.WatchedFile.FileName = "testFile.txt";
             testBundle.WatchedFile.FullPath = filePath;
 
             // Act
-            testBundle.WatchedFile.SendToServer();
+            testBundle.WatchedFile.SendToServer(mockServer.Object);
 
             // Assert
             Assert.AreEqual(true, testBundle.WatchedFile.UploadSuccessful);

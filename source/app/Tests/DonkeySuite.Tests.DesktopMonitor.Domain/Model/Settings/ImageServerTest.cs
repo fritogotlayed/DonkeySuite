@@ -1,5 +1,7 @@
 using System;
+using DonkeySuite.DesktopMonitor.Domain.Model.Providers;
 using DonkeySuite.DesktopMonitor.Domain.Model.Settings;
+using Moq;
 using NUnit.Framework;
 
 namespace DonkeySuite.Tests.DesktopMonitor.Domain.Model.Settings
@@ -9,10 +11,12 @@ namespace DonkeySuite.Tests.DesktopMonitor.Domain.Model.Settings
         private class ImageServerTestBundle
         {
             public ImageServer ImageServer { get; private set; }
+            public Mock<IEntityProvider> MockServiceProvider { get; private set; }
 
             public ImageServerTestBundle()
             {
-                ImageServer = new ImageServer();
+                MockServiceProvider = new Mock<IEntityProvider>();
+                ImageServer = new ImageServer(MockServiceProvider.Object);
             }
         }
 
@@ -40,6 +44,9 @@ namespace DonkeySuite.Tests.DesktopMonitor.Domain.Model.Settings
         {
             // Arrange
             var testBundle = new ImageServerTestBundle();
+            var mock = new  Mock<WatchDirectories>();
+
+            testBundle.MockServiceProvider.Setup(x => x.ProvideDefaultWatchDirectories()).Returns(mock.Object);
 
             // Act
             testBundle.ImageServer.PopulateWithDefaults();

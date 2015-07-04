@@ -16,19 +16,17 @@ namespace DonkeySuite.Tests.DesktopMonitor.Domain.Model.Providers
         {
             private RequestProvider _requestProvider;
 
-            public Mock<ISettingsManager> MockSettingsManager { get; private set; }
             public Mock<IWebRequestFactory> MockWebRequestFactory { get; private set; }
             public Mock<ILogProvider> MockLogProvider { get; private set; }
             public Mock<ICredentialRepository> MockRequestCredentialProvider { get; private set; }
 
             public RequestProvider RequestProvider
             {
-                get { return _requestProvider ?? (_requestProvider = new RequestProvider(MockSettingsManager.Object, MockWebRequestFactory.Object, MockLogProvider.Object, MockRequestCredentialProvider.Object)); }
+                get { return _requestProvider ?? (_requestProvider = new RequestProvider(MockWebRequestFactory.Object, MockLogProvider.Object, MockRequestCredentialProvider.Object)); }
             }
 
             public RequestProviderTestBundle()
             {
-                MockSettingsManager = new Mock<ISettingsManager>();
                 MockWebRequestFactory = new Mock<IWebRequestFactory>();
                 MockLogProvider = new Mock<ILogProvider>();
                 MockRequestCredentialProvider = new Mock<ICredentialRepository>();
@@ -39,20 +37,14 @@ namespace DonkeySuite.Tests.DesktopMonitor.Domain.Model.Providers
         public void RequestProviderCreatesObjectForProvidedType()
         {
             // Arrange
+            var mockServer = new Mock<IImageServer>();
             var testBundle = new RequestProviderTestBundle();
             var fileBytes = new byte[5];
-            var settings = new SettingsRoot()
-            {
-                ImageServer = new ImageServer
-                {
-                    ServerUrl = "http://localhost"
-                }
-            };
 
-            testBundle.MockSettingsManager.Setup(x => x.GetSettings()).Returns(settings);
+            mockServer.SetupGet(x => x.ServerUrl).Returns("http://localhost");
 
             // Act
-            var req = testBundle.RequestProvider.ProvideNewAddImageRequest("fileName.txt", fileBytes);
+            var req = testBundle.RequestProvider.ProvideNewAddImageRequest(mockServer.Object, "fileName.txt", fileBytes);
 
             // Assert
             Assert.IsNotNull(req);

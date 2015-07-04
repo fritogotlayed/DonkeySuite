@@ -3,7 +3,7 @@ using DonkeySuite.DesktopMonitor.Domain.Model.Providers;
 
 namespace DonkeySuite.DesktopMonitor.Domain.Model.Settings
 {
-    public class WatchDirectories : List<WatchDirectory>
+    public class WatchDirectories : List<WatchDirectory>, IWatchDirectories
     {
         private readonly IEntityProvider _entityLocator;
 
@@ -18,9 +18,7 @@ namespace DonkeySuite.DesktopMonitor.Domain.Model.Settings
 
         public virtual void PopulateWithDefaults()
         {
-            var d = _entityLocator.ProvideDefaultWatchDirectory();
-            d.PopulateWithDefaults();
-            Add(d);
+            Add(_entityLocator.ProvideDefaultWatchDirectory());
         }
     }
 }

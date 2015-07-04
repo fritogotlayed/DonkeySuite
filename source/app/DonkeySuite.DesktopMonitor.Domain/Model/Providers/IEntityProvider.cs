@@ -11,7 +11,8 @@ namespace DonkeySuite.DesktopMonitor.Domain.Model.Providers
         ISortStrategy ProvideSortStrategy(string key);
         SettingsRoot ProvideDefaultSettingsRoot();
         WatchDirectory ProvideDefaultWatchDirectory();
-        WatchDirectories ProvideDefaultWatchDirectories();
+        IWatchDirectories ProvideDefaultWatchDirectories();
         ImageServer ProvideDefaultImageServer();
+        IImageServers ProvideDefaultImageServers();
     }
 }

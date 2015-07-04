@@ -52,7 +52,7 @@ namespace DonkeySuite.DesktopMonitor.Wpf
             return wd;
         }
 
-        public WatchDirectories ProvideDefaultWatchDirectories()
+        public IWatchDirectories ProvideDefaultWatchDirectories()
         {
             var wd = new WatchDirectories(this);
             wd.PopulateWithDefaults();
@@ -61,9 +61,16 @@ namespace DonkeySuite.DesktopMonitor.Wpf
 
         public ImageServer ProvideDefaultImageServer()
         {
-            var imageServer = new ImageServer();
+            var imageServer = new ImageServer(this);
             imageServer.PopulateWithDefaults();
             return imageServer;
+        }
+
+        public IImageServers ProvideDefaultImageServers()
+        {
+            var imageServers = new ImageServers(this);
+            imageServers.PopulateWithDefaults();
+            return imageServers;
         }
     }
 }
