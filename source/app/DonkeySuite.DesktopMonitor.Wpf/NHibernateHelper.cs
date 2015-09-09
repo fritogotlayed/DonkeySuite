@@ -21,6 +21,7 @@ using DonkeySuite.DesktopMonitor.Domain.Model;
 using DonkeySuite.DesktopMonitor.Wpf.Mappings;
 using FluentNHibernate.Cfg;
 using FluentNHibernate.Cfg.Db;
+using MadDonkeySoftware.SystemWrappers.IO;
 using NHibernate;
 using NHibernate.Tool.hbm2ddl;
 using Ninject;
@@ -39,9 +40,12 @@ namespace DonkeySuite.DesktopMonitor.Wpf
                 if (_configuration != null) return _configuration;
 
                 var environmentWrapper = DependencyManager.Kernel.Get<IEnvironmentUtility>();
+                var directory = DependencyManager.Kernel.Get<IDirectory>();
+
                 var sep = environmentWrapper.DirectorySeparatorChar.ToString();
                 var userHome = environmentWrapper.UserHomeDirectory;
-                var fullFilePath = string.Join(sep, userHome, ".mdsoftware", "dirWatcher", "dirWatcher.db");
+                var settingsFolder = string.Join(sep, userHome, ".mdsoftware", "dirWatcher");
+                var fullFilePath = string.Join(sep, settingsFolder, "dirWatcher.db");
                 var connString = string.Format("Data Source={0};Version=3", fullFilePath);
 
                 var fluentConfiguration = Fluently.Configure()
@@ -58,6 +62,9 @@ namespace DonkeySuite.DesktopMonitor.Wpf
                 {
                     fluentConfiguration.ExposeConfiguration(cfg => new SchemaUpdate(cfg).Execute(false, true));
                 }
+
+                // Make sure our settings folder exists
+                directory.CreateDirectory(settingsFolder);
 
                 _configuration = fluentConfiguration.BuildConfiguration();
                 

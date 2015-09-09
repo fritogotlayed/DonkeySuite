@@ -85,8 +85,8 @@ namespace DonkeySuite.DesktopMonitor.Wpf
             kernel.Bind<IEnvironment>().To<EnvironmentWrapper>().InTransientScope();
             kernel.Bind<IEnvironmentUtility>().To<EnvironmentUtility>().InTransientScope();
             kernel.Bind<IFile>().To<FileWrapper>().InTransientScope();
-            kernel.Bind<ILogProvider>().To<LogProvider>();
             kernel.Bind<ILog>().ToMethod(context => LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType));
+            kernel.Bind<ILogProvider>().To<LogProvider>();
             kernel.Bind<IPath>().To<PathWrapper>().InTransientScope();
             kernel.Bind<IRequestProvider>().To<RequestProvider>().InTransientScope();
             kernel.Bind<ISemaphore>().To<SemaphoreWrapper>().InTransientScope()
@@ -94,6 +94,7 @@ namespace DonkeySuite.DesktopMonitor.Wpf
                   .WithConstructorArgument("maximumCount", 1);
             kernel.Bind<IEntityProvider>().To<EntityProvider>();
             kernel.Bind<ISettingsManager>().To<SettingsManager>();
+            kernel.Bind<ISettingsRepository>().To<SettingsRepository>();
             kernel.Bind<IWatchedFile>().To<WatchedFile>();
             kernel.Bind<IWebRequestFactory>().To<WebRequestFactory>();
             kernel.Bind<IXmlSerializer>()
