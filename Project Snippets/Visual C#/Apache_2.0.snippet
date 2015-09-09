@@ -1,0 +1,55 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<CodeSnippet Format="1.0.0" xmlns="http://schemas.microsoft.com/VisualStudio/2005/CodeSnippet">
+  <Header>
+    <SnippetTypes>
+      <SnippetType>Expansion</SnippetType>
+    </SnippetTypes>
+    <Title>Apache 2.0 File Header C#</Title>
+    <Author>MadDonkey Software</Author>
+    <Description>Adds a StyleCop compliant file header comment with company and copyright information.</Description>
+    <HelpUrl></HelpUrl>
+    <Shortcut>header_apache20</Shortcut>
+  </Header>
+  <Snippet>
+    <Declarations>
+      <Literal Editable="true">
+        <ID>FileName</ID>
+        <ToolTip>The current file name.</ToolTip>
+        <Default>File Name</Default>
+        <Function>
+        </Function>
+      </Literal>
+      <Literal Editable="true">
+        <ID>CopyrightOwner</ID>
+        <ToolTip>Copyright Owner</ToolTip>
+        <Default>MadDonkey Software</Default>
+        <Function>
+        </Function>
+      </Literal>
+      <Literal Editable="true">
+        <ID>Year</ID>
+        <ToolTip>The year the file was created</ToolTip>
+        <Default>Year</Default>
+        <Function>
+        </Function>
+      </Literal>
+    </Declarations>
+    <Code Language="csharp" Delimiter="$"><![CDATA[/*
+<copyright file="$FileName$.cs">
+   Copyright $Year$ $CopyrightOwner$
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+</copyright>
+*/]]></Code>
+  </Snippet>
+</CodeSnippet>
