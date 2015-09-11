@@ -21,6 +21,7 @@ using DonkeySuite.DesktopMonitor.Domain.Model;
 using DonkeySuite.DesktopMonitor.Domain.Model.Settings;
 using DonkeySuite.DesktopMonitor.Wpf.Repositories;
 using GalaSoft.MvvmLight.Command;
+using GalaSoft.MvvmLight.Messaging;
 using Ninject;
 
 namespace DonkeySuite.DesktopMonitor.Wpf.ViewModel
@@ -52,10 +53,19 @@ namespace DonkeySuite.DesktopMonitor.Wpf.ViewModel
             {
                 // Code runs "for real"
                 ScanFolderCommand = new RelayCommand(ScanFolderCommandHandler);
+                NavigateCommand = new RelayCommand(NavigateCommandHandler);
             }
         }
 
         public RelayCommand ScanFolderCommand { get; set; }
+
+        public RelayCommand NavigateCommand { get; set; }
+
+        public void NavigateCommandHandler()
+        {
+            var msg = new NavigateToViewMessage {ViewType = typeof (SettingsViewModel)};
+            Messenger.Default.Send(msg);
+        }
 
         public void ScanFolderCommandHandler()
         {

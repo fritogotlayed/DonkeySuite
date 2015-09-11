@@ -23,6 +23,11 @@
       mc:Ignorable="d" d:DesignHeight="350" d:DesignWidth="525"
       DataContext="{Binding Source={StaticResource Locator}, Path=MainViewModel}">
     <Grid>
-        <Button Content="Scan Folder Test" FontSize="30" FontWeight="Bold" Command="{Binding ScanFolderCommand}" Margin="30"></Button>
+    <Grid.RowDefinitions>
+        <RowDefinition></RowDefinition>
+        <RowDefinition></RowDefinition>
+    </Grid.RowDefinitions>
+        <Button Content="Navigation Test" FontSize="30" FontWeight="Bold" Command="{Binding NavigateCommand}" Margin="30"></Button>
+        <Button Grid.Row="1" Content="Scan Folder Test" FontSize="30" FontWeight="Bold" Command="{Binding ScanFolderCommand}" Margin="30"></Button>
     </Grid>
 </UserControl>

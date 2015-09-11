@@ -22,7 +22,7 @@
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
       mc:Ignorable="d"
       d:DesignHeight="350" d:DesignWidth="525"
-      DataContext="{Binding Source={StaticResource Locator}, Path=TestViewModel}">
+      DataContext="{Binding Source={StaticResource Locator}, Path=SettingsViewModel}">
     <UserControl.Resources>
         <Style TargetType="{x:Type Button}">
             <Setter Property="Margin" Value="15"/>

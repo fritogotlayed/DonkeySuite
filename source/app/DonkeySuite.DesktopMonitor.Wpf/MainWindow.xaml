@@ -23,7 +23,7 @@
     <DockPanel>
         <Menu DockPanel.Dock="Top">
             <MenuItem Header="_Main" Command="{Binding DisplayMainView}"></MenuItem>
-            <MenuItem Header="_Settings" Command="{Binding DisplayTestView}"></MenuItem>
+            <MenuItem Header="_Settings" Command="{Binding DisplaySettingsView}"></MenuItem>
         </Menu>
         <ContentControl Content="{Binding CurrentViewModel}" />
     </DockPanel>

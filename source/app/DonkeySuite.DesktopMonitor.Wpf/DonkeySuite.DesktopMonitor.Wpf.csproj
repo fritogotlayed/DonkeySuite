@@ -105,6 +105,7 @@
     </ApplicationDefinition>
     <Compile Include="DependencyManager.cs" />
     <Compile Include="Mappings\WatchedFileMap.cs" />
+    <Compile Include="NavigateToViewMessage.cs" />
     <Compile Include="NHibernateHelper.cs" />
     <Compile Include="Repositories\SettingsRepository.cs" />
     <Compile Include="Repositories\Repository.cs" />

@@ -15,10 +15,8 @@
    limitations under the License.
 </copyright>
 */
-using System.Windows.Input;
 using DonkeySuite.DesktopMonitor.Domain.Model;
-using GalaSoft.MvvmLight.Command;
-using Ninject;
+using GalaSoft.MvvmLight.Messaging;
 
 namespace DonkeySuite.DesktopMonitor.Wpf.ViewModel
 {
@@ -50,7 +48,8 @@ namespace DonkeySuite.DesktopMonitor.Wpf.ViewModel
             else
             {
                 // Code runs "for real"
-                CurrentViewModel = DependencyManager.Kernel.Get<MainViewModel>();
+                Messenger.Default.Register<NavigateToViewMessage>(this, ReceiveMessage);
+                CurrentViewModel = (DesktopMonitorBaseViewModel) DependencyManager.Kernel.GetService(typeof(MainViewModel));
             }
         }
 
@@ -64,15 +63,9 @@ namespace DonkeySuite.DesktopMonitor.Wpf.ViewModel
             }
         }
 
-        // Adapted from http://stackoverflow.com/questions/19654295/wpf-mvvm-navigate-views
-        public ICommand DisplayTestView
+        private void ReceiveMessage(NavigateToViewMessage action)
         {
-            get { return new RelayCommand(() => CurrentViewModel = DependencyManager.Kernel.Get<SettingsViewModel>(), () => true); }
-        }
-
-        public ICommand DisplayMainView
-        {
-            get { return new RelayCommand(() => CurrentViewModel = DependencyManager.Kernel.Get<MainViewModel>(), () => true); }
+            CurrentViewModel = (DesktopMonitorBaseViewModel) DependencyManager.Kernel.GetService(action.ViewType);
         }
     }
 }
